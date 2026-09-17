@@ -1,0 +1,8 @@
+name = "clown-dance-gallery"
+compatibility_date = "2026-09-01"
+pages_build_output_dir = "dist"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "clown_gallery"
+database_id = "6edcd637-2b49-4568-9074-feee1ace1ebc"

@@ -1,0 +1,1 @@
+import ClownDanceGallery from "./ClownDanceGallery"; export default function App() { return <ClownDanceGallery />; }
