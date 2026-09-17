@@ -7,9 +7,8 @@ binding = "DB"
 database_name = "clown_gallery"
 database_id = "6edcd637-2b49-4568-9074-feee1ace1ebc"
 
-[vars]
-# Where contact-form submissions get emailed. Replace before deploying.
-CONTACT_TO_EMAIL = "REPLACE_WITH_YOUR_EMAIL@example.com"
-# RESEND_API_KEY is a SECRET, not a var — set it with:
+# CONTACT_TO_EMAIL and RESEND_API_KEY are both set as SECRETS, not vars here,
+# so neither one ever sits in this file (which is tracked in git). Set them with:
+#   wrangler pages secret put CONTACT_TO_EMAIL
 #   wrangler pages secret put RESEND_API_KEY
 # or via the Cloudflare dashboard (Pages project -> Settings -> Environment variables -> Encrypt).
