@@ -1,13 +1,35 @@
-export function randomToken() {
-  const arr = new Uint8Array(32);
-  crypto.getRandomValues(arr);
-  return Array.from(arr).map(b => b.toString(16).padStart(2,'0')).join('');
+function bytesToHex(bytes) {
+  return Array.from(bytes).map(b => b.toString(16).padStart(2, '0')).join('');
 }
 
-export async function hashPassword(password) {
-  const data = new TextEncoder().encode(password);
-  const hash = await crypto.subtle.digest('SHA-256', data);
-  return Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2,'0')).join('');
+function hexToBytes(hex) {
+  const bytes = new Uint8Array(hex.length / 2);
+  for (let i = 0; i < bytes.length; i++) bytes[i] = parseInt(hex.substr(i * 2, 2), 16);
+  return bytes;
+}
+
+function randomHex(byteLength = 32) {
+  const arr = new Uint8Array(byteLength);
+  crypto.getRandomValues(arr);
+  return bytesToHex(arr);
+}
+
+export const randomToken = randomHex;
+export const newSalt = () => randomHex(16);
+
+const PBKDF2_ITERATIONS = 100000;
+
+// Salted PBKDF2 (SHA-256, 100k iterations) via the Workers-native SubtleCrypto API.
+// Requires a per-user salt (see newSalt()) — never hash a password without one.
+export async function hashPassword(password, saltHex) {
+  const keyMaterial = await crypto.subtle.importKey(
+    'raw', new TextEncoder().encode(password), 'PBKDF2', false, ['deriveBits']
+  );
+  const bits = await crypto.subtle.deriveBits(
+    { name: 'PBKDF2', salt: hexToBytes(saltHex), iterations: PBKDF2_ITERATIONS, hash: 'SHA-256' },
+    keyMaterial, 256
+  );
+  return bytesToHex(new Uint8Array(bits));
 }
 
 export function sessionCookie(token, maxAge = 60*60*24*30) {

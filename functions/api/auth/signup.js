@@ -1,15 +1,16 @@
-import { hashPassword, randomToken, sessionCookie, json, err } from './_helpers.js';
+import { hashPassword, newSalt, randomToken, sessionCookie, json, err } from './_helpers.js';
 
 export async function onRequestPost({ env, request }) {
   const { name, email, password } = await request.json();
   if (!name || !email || !password || password.length < 8)
     return err('Name, email and password (8+ chars) required');
-  const password_hash = await hashPassword(password);
+  const password_salt = newSalt();
+  const password_hash = await hashPassword(password, password_salt);
   const created_at = Date.now();
   try {
     const { meta } = await env.DB.prepare(
-      'INSERT INTO users (name, email, password_hash, created_at) VALUES (?, ?, ?, ?)'
-    ).bind(name.slice(0,40), email.toLowerCase().trim(), password_hash, created_at).run();
+      'INSERT INTO users (name, email, password_hash, password_salt, created_at) VALUES (?, ?, ?, ?, ?)'
+    ).bind(name.slice(0,40), email.toLowerCase().trim(), password_hash, password_salt, created_at).run();
     const token = randomToken();
     await env.DB.prepare(
       'INSERT INTO sessions (token, user_id, created_at) VALUES (?, ?, ?)'

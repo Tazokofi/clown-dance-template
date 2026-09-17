@@ -1,7 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-
-const BUNNY_LIBRARY_ID = "682865";
-const BUNNY_CDN = "vz-9436fe3b-2b8.b-cdn.net";
+import { SITE, BUNNY_LIBRARY_ID, BUNNY_CDN } from "./config.js";
 
 function bunnyEmbed(videoId) {
   return `https://iframe.mediadelivery.net/embed/${BUNNY_LIBRARY_ID}/${videoId}?autoplay=true&preload=true`;
@@ -662,7 +660,7 @@ export default function ClownDanceGallery() {
       `}</style>
 
       <div className="top-bar">
-        <div className="site-title">Clown <span>Dance</span> Gallery</div>
+        <div className="site-title">{SITE.nameMain} <span>{SITE.nameAccent}</span> {SITE.nameSuffix}</div>
         <div className="top-bar-right">
           {user ? (
             <>
@@ -677,8 +675,8 @@ export default function ClownDanceGallery() {
       </div>
 
       <header className="header">
-        <h1>This is me, dressed as a clown while dancing.<br/>Come and join the conversation</h1>
-        <p>May – July 2026</p>
+        <h1>{SITE.heading}<br/>{SITE.headingLine2}</h1>
+        <p>{SITE.dateRange}</p>
       </header>
 
       {loading && <div className="empty-state"><p>Loading videos…</p></div>}

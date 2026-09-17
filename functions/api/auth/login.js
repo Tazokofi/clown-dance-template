@@ -4,11 +4,12 @@ export async function onRequestPost({ env, request }) {
   const { email, password } = await request.json();
   if (!email || !password) return err('Email and password required');
   const user = await env.DB.prepare(
-    'SELECT id, name, email, avatar_url, is_admin, is_banned, password_hash FROM users WHERE email = ?'
+    'SELECT id, name, email, avatar_url, is_admin, is_banned, password_hash, password_salt FROM users WHERE email = ?'
   ).bind(email.toLowerCase().trim()).first();
   if (!user) return err('Invalid email or password', 401);
   if (user.is_banned) return err('This account has been suspended', 403);
-  const hash = await hashPassword(password);
+  if (!user.password_salt) return err('This account needs to be re-created — please sign up again', 401);
+  const hash = await hashPassword(password, user.password_salt);
   if (hash !== user.password_hash) return err('Invalid email or password', 401);
   const token = randomToken();
   await env.DB.prepare(
