@@ -16,6 +16,31 @@ function formatCount(n) {
   if (n >= 1000) return (n/1000).toFixed(1).replace('.0','') + 'K';
   return n.toString();
 }
+function formatDuration(seconds) {
+  if (!seconds || seconds <= 0) return null;
+  const h = Math.floor(seconds / 3600);
+  const m = Math.floor((seconds % 3600) / 60);
+  const s = Math.floor(seconds % 60);
+  if (h > 0) return `${h}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+  return `${m}:${String(s).padStart(2,'0')}`;
+}
+function parseDuration(str) {
+  const parts = (str||'').trim().split(':').map(p => parseInt(p, 10));
+  if (!parts.length || parts.some(isNaN)) return 0;
+  return parts.reduce((total, p) => total * 60 + p, 0);
+}
+
+// Waits (briefly) for Bunny's Player.js library to finish loading.
+function waitForPlayerjs(timeout = 5000) {
+  return new Promise(resolve => {
+    if (window.playerjs) return resolve(window.playerjs);
+    const start = Date.now();
+    const iv = setInterval(() => {
+      if (window.playerjs) { clearInterval(iv); resolve(window.playerjs); }
+      else if (Date.now() - start > timeout) { clearInterval(iv); resolve(null); }
+    }, 150);
+  });
+}
 
 // Device token for anonymous view tracking
 function getDeviceToken() {
@@ -349,13 +374,20 @@ function Comments({ videoId, user, onAuthed, onSignOut, onUpdateUser }) {
 }
 
 // ── Video Modal ────────────────────────────────────────
-function VideoModal({ video: initialVideo, onClose, user, onAuthed, onSignOut, onUpdateUser }) {
+function VideoModal({ video: initialVideo, videos, onNavigate, onClose, user, onAuthed, onSignOut, onUpdateUser }) {
   const overlayRef             = useRef(null);
-  const viewSent               = useRef(false);
+  const iframeRef               = useRef(null);
+  const viewSentForId          = useRef(null);
   const [video, setVideo]      = useState(initialVideo);
   const [copied, setCopied]    = useState(false);
 
-  useEffect(() => { setVideo(initialVideo); }, [initialVideo]);
+  useEffect(() => { setVideo(initialVideo); setCopied(false); }, [initialVideo]);
+
+  const currentIndex = (videos || []).findIndex(v => v.id === video.id);
+  const prevVideo = currentIndex > 0 ? videos[currentIndex - 1] : null;
+  const nextVideo = currentIndex >= 0 && currentIndex < (videos ? videos.length - 1 : -1) ? videos[currentIndex + 1] : null;
+  function goNext() { if (nextVideo) onNavigate(nextVideo); }
+  function goPrev() { if (prevVideo) onNavigate(prevVideo); }
 
   async function handleVideoVote(vote) {
     if (!user) return;
@@ -394,11 +426,11 @@ function VideoModal({ video: initialVideo, onClose, user, onAuthed, onSignOut, o
     return () => document.removeEventListener('keydown', onKey);
   }, [onClose]);
 
-  // Count view after 5 seconds
+  // Count view after 5 seconds (resets when the modal switches to a new video)
   useEffect(() => {
-    if (viewSent.current) return;
+    if (viewSentForId.current === video.id) return;
     const timer = setTimeout(async () => {
-      viewSent.current = true;
+      viewSentForId.current = video.id;
       try {
         const body = user ? {} : { device_token: getDeviceToken() };
         await api(`/api/videos/${video.id}/view`, { method:'POST', body: JSON.stringify(body) });
@@ -407,13 +439,29 @@ function VideoModal({ video: initialVideo, onClose, user, onAuthed, onSignOut, o
     return () => clearTimeout(timer);
   }, [video.id, user]);
 
+  // Auto-advance to the next video when this one finishes playing
+  useEffect(() => {
+    let cancelled = false;
+    let player = null;
+    (async () => {
+      const pjs = await waitForPlayerjs();
+      if (cancelled || !pjs || !iframeRef.current) return;
+      player = new pjs.Player(iframeRef.current);
+      player.on('ready', () => {
+        if (cancelled) return;
+        player.on('ended', () => { if (!cancelled) goNext(); });
+      });
+    })();
+    return () => { cancelled = true; };
+  }, [video.bunny_video_id, nextVideo && nextVideo.id]);
+
   return (
     <div className="overlay" ref={overlayRef} onMouseDown={e=>{if(e.target===overlayRef.current)onClose();}}>
       <div className="modal">
         <button className="modal-close" onClick={onClose}>×</button>
 
         <div className="video-container">
-          <iframe src={bunnyEmbed(video.bunny_video_id)} allowFullScreen allow="autoplay"
+          <iframe key={video.bunny_video_id} ref={iframeRef} src={bunnyEmbed(video.bunny_video_id)} allowFullScreen allow="autoplay"
             style={{position:'absolute',top:0,left:0,width:'100%',height:'100%',border:'none'}} />
         </div>
 
@@ -446,6 +494,8 @@ function VideoModal({ video: initialVideo, onClose, user, onAuthed, onSignOut, o
             <button className="video-share-btn" onClick={handleShare} type="button">
               {copied ? '✓ Copied!' : '↗ Share'}
             </button>
+            {prevVideo && <button className="video-share-btn" onClick={goPrev} type="button">⏮ Prev</button>}
+            {nextVideo && <button className="video-share-btn" onClick={goNext} type="button">Next ⏭</button>}
           </div>
         </div>
 
@@ -457,21 +507,23 @@ function VideoModal({ video: initialVideo, onClose, user, onAuthed, onSignOut, o
 
 // ── Admin: Add Video Panel ─────────────────────────────
 function AddVideoPanel({ onAdded }) {
-  const [title, setTitle] = useState('');
-  const [desc, setDesc]   = useState('');
-  const [vid, setVid]     = useState('');
-  const [busy, setBusy]   = useState(false);
-  const [error, setError] = useState(null);
+  const [title, setTitle]       = useState('');
+  const [desc, setDesc]         = useState('');
+  const [vid, setVid]           = useState('');
+  const [duration, setDuration] = useState('');
+  const [busy, setBusy]         = useState(false);
+  const [error, setError]       = useState(null);
 
   async function submit(e) {
     e.preventDefault(); setBusy(true); setError(null);
     try {
       const video = await api('/api/videos', { method:'POST', body: JSON.stringify({
         title, description: desc, bunny_video_id: vid.trim(),
-        thumbnail_url: bunnyThumb(vid.trim())
+        thumbnail_url: bunnyThumb(vid.trim()),
+        duration_seconds: parseDuration(duration)
       })});
       onAdded(video);
-      setTitle(''); setDesc(''); setVid('');
+      setTitle(''); setDesc(''); setVid(''); setDuration('');
     } catch(e) { setError(e.message); }
     finally { setBusy(false); }
   }
@@ -483,6 +535,7 @@ function AddVideoPanel({ onAdded }) {
         <input type="text" placeholder="Title" value={title} onChange={e=>setTitle(e.target.value)} required />
         <input type="text" placeholder="Description (optional)" value={desc} onChange={e=>setDesc(e.target.value)} />
         <input type="text" placeholder="Bunny Video ID (e.g. abc123-...)" value={vid} onChange={e=>setVid(e.target.value)} required />
+        <input type="text" placeholder="Duration (mm:ss, e.g. 3:45)" value={duration} onChange={e=>setDuration(e.target.value)} />
         <button type="submit" disabled={busy} className="btn-primary">{busy?'Adding…':'Add video'}</button>
         {error && <p className="form-error">{error}</p>}
       </form>
@@ -564,7 +617,9 @@ export default function ClownDanceGallery() {
         .card-thumb { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform 0.25s; }
         .card:hover .card-thumb { transform: scale(1.04); }
         .card-thumb-placeholder { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: #1a1a1a; color: #333; font-size: 32px; }
-        .card-stats-bar { position: absolute; bottom: 0; left: 0; right: 0; padding: 6px 10px; background: linear-gradient(transparent, rgba(0,0,0,0.85)); display: flex; gap: 10px; font-size: 11px; color: rgba(255,255,255,0.7); }
+        .card-stats-bar { position: absolute; bottom: 0; left: 0; right: 0; padding: 6px 10px; background: linear-gradient(transparent, rgba(0,0,0,0.85)); display: flex; justify-content: space-between; align-items: center; font-size: 11px; color: rgba(255,255,255,0.7); }
+        .card-stats-left { display: flex; gap: 10px; }
+        .card-duration { background: rgba(0,0,0,0.75); color: #fff; padding: 1px 5px; border-radius: 3px; font-weight: 600; font-size: 11px; }
         .card-body { padding: 10px 12px 14px; }
         .card-body h3 { font-size: 14px; font-weight: 600; margin-bottom: 4px; color: #f5f5f5; line-height: 1.3; }
         .card-body span { font-size: 11px; color: #555; }
@@ -653,7 +708,7 @@ export default function ClownDanceGallery() {
           .vote-btn { padding: 2px 6px; font-size: 11px; }
           .add-video-panel { margin: 20px 0 0; padding: 16px; }
         }
-        @media (max-width: 380px) {
+        @media (max-width: 480px) {
           .grid { grid-template-columns: 1fr; }
         }
         .empty-state p { font-size: 15px; margin-top: 8px; }
@@ -696,8 +751,11 @@ export default function ClownDanceGallery() {
                 : <div className="card-thumb-placeholder">▶</div>
               }
               <div className="card-stats-bar">
-                <span>👁 {formatCount(v.view_count)}</span>
-                <span>💬 {formatCount(v.comment_count)}</span>
+                <span className="card-stats-left">
+                  <span>👁 {formatCount(v.view_count)}</span>
+                  <span>💬 {formatCount(v.comment_count)}</span>
+                </span>
+                {formatDuration(v.duration_seconds) && <span className="card-duration">{formatDuration(v.duration_seconds)}</span>}
               </div>
             </div>
             <div className="card-body">
@@ -725,6 +783,8 @@ export default function ClownDanceGallery() {
       {selected && (
         <VideoModal
           video={selected}
+          videos={videos}
+          onNavigate={openVideo}
           onClose={closeVideo}
           user={user}
           onAuthed={setUser}

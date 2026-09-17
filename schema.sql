@@ -25,6 +25,7 @@ CREATE TABLE videos (
   description    TEXT NOT NULL DEFAULT '',
   bunny_video_id TEXT NOT NULL,
   thumbnail_url  TEXT NOT NULL DEFAULT '',
+  duration_seconds INTEGER NOT NULL DEFAULT 0,
   view_count     INTEGER NOT NULL DEFAULT 0,
   like_count     INTEGER NOT NULL DEFAULT 0,
   dislike_count  INTEGER NOT NULL DEFAULT 0,
