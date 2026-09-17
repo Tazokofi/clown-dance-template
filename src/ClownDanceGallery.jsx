@@ -374,7 +374,7 @@ function Comments({ videoId, user, onAuthed, onSignOut, onUpdateUser }) {
 }
 
 // ── Video Modal ────────────────────────────────────────
-function VideoModal({ video: initialVideo, videos, onNavigate, onClose, user, onAuthed, onSignOut, onUpdateUser }) {
+function VideoModal({ video: initialVideo, videos, onNavigate, onVideoUpdated, onClose, user, onAuthed, onSignOut, onUpdateUser }) {
   const overlayRef             = useRef(null);
   const iframeRef               = useRef(null);
   const viewSentForId          = useRef(null);
@@ -388,6 +388,13 @@ function VideoModal({ video: initialVideo, videos, onNavigate, onClose, user, on
   const nextVideo = currentIndex >= 0 && currentIndex < (videos ? videos.length - 1 : -1) ? videos[currentIndex + 1] : null;
   function goNext() { if (nextVideo) onNavigate(nextVideo); }
   function goPrev() { if (prevVideo) onNavigate(prevVideo); }
+
+  const [editing, setEditing] = useState(false);
+  function handleVideoSaved(updated) {
+    setVideo(prev => ({ ...prev, ...updated }));
+    if (onVideoUpdated) onVideoUpdated({ ...video, ...updated });
+    setEditing(false);
+  }
 
   async function handleVideoVote(vote) {
     if (!user) return;
@@ -470,10 +477,15 @@ function VideoModal({ video: initialVideo, videos, onNavigate, onClose, user, on
             <h2 className="modal-title">{video.title}</h2>
             {video.description && !video.description.startsWith('Recorded') && <p className="modal-desc">{video.description}</p>}
             <div className="modal-stats">
-              <span>👁 {formatCount(video.view_count)} views</span>
-              <span>💬 {formatCount(video.comment_count)} comments</span>
+              <span>👁 {formatCount(video.view_count)} view{video.view_count===1?'':'s'}</span>
+              <span>💬 {formatCount(video.comment_count)} comment{video.comment_count===1?'':'s'}</span>
               <span>📅 {formatDate(video.created_at)}</span>
             </div>
+            {user?.is_admin && (
+              editing
+                ? <EditVideoForm video={video} onSaved={handleVideoSaved} onCancel={()=>setEditing(false)} />
+                : <button className="link-btn" onClick={()=>setEditing(true)} type="button" style={{marginTop:6}}>✎ Edit video</button>
+            )}
           </div>
           <div className="video-actions">
             <div className="video-vote-group">
@@ -502,6 +514,43 @@ function VideoModal({ video: initialVideo, videos, onNavigate, onClose, user, on
         <Comments videoId={video.id} user={user} onAuthed={onAuthed} onSignOut={onSignOut} onUpdateUser={onUpdateUser} />
       </div>
     </div>
+  );
+}
+
+// ── Admin: Edit Video Form (shown inline inside the video modal) ──
+function EditVideoForm({ video, onSaved, onCancel }) {
+  const [title, setTitle]       = useState(video.title);
+  const [desc, setDesc]         = useState(video.description || '');
+  const [vid, setVid]           = useState(video.bunny_video_id);
+  const [duration, setDuration] = useState(formatDuration(video.duration_seconds) || '');
+  const [busy, setBusy]         = useState(false);
+  const [error, setError]       = useState(null);
+
+  async function submit(e) {
+    e.preventDefault(); setBusy(true); setError(null);
+    try {
+      const updated = await api(`/api/videos/${video.id}/edit`, { method:'POST', body: JSON.stringify({
+        title, description: desc, bunny_video_id: vid.trim(),
+        thumbnail_url: bunnyThumb(vid.trim()),
+        duration_seconds: parseDuration(duration)
+      })});
+      onSaved(updated);
+    } catch(e) { setError(e.message); }
+    finally { setBusy(false); }
+  }
+
+  return (
+    <form onSubmit={submit} className="add-video-panel" style={{margin:'10px 0 0',padding:14,maxWidth:'none'}}>
+      <input type="text" placeholder="Title" value={title} onChange={e=>setTitle(e.target.value)} required />
+      <input type="text" placeholder="Description" value={desc} onChange={e=>setDesc(e.target.value)} style={{marginTop:8}} />
+      <input type="text" placeholder="Bunny Video ID" value={vid} onChange={e=>setVid(e.target.value)} required style={{marginTop:8}} />
+      <input type="text" placeholder="Duration (mm:ss)" value={duration} onChange={e=>setDuration(e.target.value)} style={{marginTop:8}} />
+      <div style={{display:'flex',gap:8,marginTop:10}}>
+        <button type="submit" disabled={busy} className="btn-primary">{busy?'Saving…':'Save'}</button>
+        <button type="button" className="btn-ghost" onClick={onCancel}>Cancel</button>
+      </div>
+      {error && <p className="form-error" style={{marginTop:6}}>{error}</p>}
+    </form>
   );
 }
 
@@ -574,6 +623,10 @@ export default function ClownDanceGallery() {
   function closeVideo() {
     setSelected(null);
     window.history.pushState({}, '', window.location.pathname);
+  }
+
+  function handleVideoUpdated(updated) {
+    setVideos(prev => prev.map(v => v.id === updated.id ? { ...v, ...updated } : v));
   }
 
   // Handle browser back/forward buttons
@@ -785,6 +838,7 @@ export default function ClownDanceGallery() {
           video={selected}
           videos={videos}
           onNavigate={openVideo}
+          onVideoUpdated={handleVideoUpdated}
           onClose={closeVideo}
           user={user}
           onAuthed={setUser}
