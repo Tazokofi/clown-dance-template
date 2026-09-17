@@ -6,3 +6,10 @@ pages_build_output_dir = "dist"
 binding = "DB"
 database_name = "clown_gallery"
 database_id = "6edcd637-2b49-4568-9074-feee1ace1ebc"
+
+[vars]
+# Where contact-form submissions get emailed. Replace before deploying.
+CONTACT_TO_EMAIL = "REPLACE_WITH_YOUR_EMAIL@example.com"
+# RESEND_API_KEY is a SECRET, not a var — set it with:
+#   wrangler pages secret put RESEND_API_KEY
+# or via the Cloudflare dashboard (Pages project -> Settings -> Environment variables -> Encrypt).

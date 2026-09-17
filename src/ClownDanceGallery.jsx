@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import { SITE, BUNNY_LIBRARY_ID, BUNNY_CDN } from "./config.js";
+import { SITE, BUNNY_LIBRARY_ID, BUNNY_CDN, INITIAL_VIDEOS_SHOWN, FAQS, SOCIAL_LINKS } from "./config.js";
 
 function bunnyEmbed(videoId) {
   return `https://iframe.mediadelivery.net/embed/${BUNNY_LIBRARY_ID}/${videoId}?autoplay=true&preload=true`;
@@ -30,17 +30,6 @@ function parseDuration(str) {
   return parts.reduce((total, p) => total * 60 + p, 0);
 }
 
-// Waits (briefly) for Bunny's Player.js library to finish loading.
-function waitForPlayerjs(timeout = 5000) {
-  return new Promise(resolve => {
-    if (window.playerjs) return resolve(window.playerjs);
-    const start = Date.now();
-    const iv = setInterval(() => {
-      if (window.playerjs) { clearInterval(iv); resolve(window.playerjs); }
-      else if (Date.now() - start > timeout) { clearInterval(iv); resolve(null); }
-    }, 150);
-  });
-}
 
 // Device token for anonymous view tracking
 function getDeviceToken() {
@@ -228,7 +217,7 @@ function Comment({ c, user, onReply, onVote, onReport, onDelete, onUnhide, depth
 }
 
 // ── Comments Section ───────────────────────────────────
-function Comments({ videoId, user, onAuthed, onSignOut, onUpdateUser }) {
+function Comments({ kind = 'video', videoId, user, onAuthed, onSignOut, onUpdateUser }) {
   const [comments, setComments] = useState(null);
   const [error, setError]       = useState(null);
   const [text, setText]         = useState('');
@@ -237,10 +226,13 @@ function Comments({ videoId, user, onAuthed, onSignOut, onUpdateUser }) {
   const [sort, setSort]         = useState('newest'); // newest | oldest | top
   const textareaRef             = useRef(null);
 
+  const listUrl = kind === 'site' ? '/api/site-comments' : `/api/videos/${videoId}/comments`;
+  const actionBase = kind === 'site' ? '/api/site-comments' : '/api/comments';
+
   const load = useCallback(async () => {
-    try { setComments(await api(`/api/videos/${videoId}/comments`)); }
+    try { setComments(await api(listUrl)); }
     catch { setError("Couldn't load comments."); }
-  }, [videoId]);
+  }, [listUrl]);
 
   useEffect(() => { setComments(null); setError(null); load(); }, [load]);
 
@@ -248,7 +240,7 @@ function Comments({ videoId, user, onAuthed, onSignOut, onUpdateUser }) {
     e.preventDefault(); if (!text.trim()) return;
     setPosting(true); setError(null);
     try {
-      const saved = await api(`/api/videos/${videoId}/comments`, {
+      const saved = await api(listUrl, {
         method:'POST', body: JSON.stringify({ text: text.trim(), parent_id: replyTo?.id || null })
       });
       setComments(prev=>[...(prev||[]), saved]);
@@ -260,7 +252,7 @@ function Comments({ videoId, user, onAuthed, onSignOut, onUpdateUser }) {
   async function handleVote(commentId, vote) {
     if (!user) return;
     try {
-      const res = await api(`/api/comments/${commentId}/vote`, { method:'POST', body: JSON.stringify({vote}) });
+      const res = await api(`${actionBase}/${commentId}/vote`, { method:'POST', body: JSON.stringify({vote}) });
       setComments(prev => prev.map(c => {
         if (c.id !== commentId) return c;
         const old = c.my_vote;
@@ -282,7 +274,7 @@ function Comments({ videoId, user, onAuthed, onSignOut, onUpdateUser }) {
       return;
     }
     try {
-      await api(`/api/comments/${commentId}/report`, { method:'POST', body: JSON.stringify({reason}) });
+      await api(`${actionBase}/${commentId}/report`, { method:'POST', body: JSON.stringify({reason}) });
       setComments(prev => prev.map(c => c.id===commentId ? {...c, my_report:1, report_count: c.report_count+1, is_hidden: c.report_count+1>=3?1:0} : c));
     } catch(e) { alert(e.message); }
   }
@@ -290,14 +282,14 @@ function Comments({ videoId, user, onAuthed, onSignOut, onUpdateUser }) {
   async function handleDelete(commentId) {
     if (!confirm('Delete this comment?')) return;
     try {
-      await api(`/api/comments/${commentId}/delete`, { method:'POST' });
+      await api(`${actionBase}/${commentId}/delete`, { method:'POST' });
       setComments(prev=>prev.filter(c=>c.id!==commentId));
     } catch(e) { alert(e.message); }
   }
 
   async function handleUnhide(commentId) {
     try {
-      await api('/api/admin/unhide', { method:'POST', body: JSON.stringify({comment_id:commentId}) });
+      await api('/api/admin/unhide', { method:'POST', body: JSON.stringify({comment_id:commentId, kind}) });
       setComments(prev=>prev.map(c=>c.id===commentId?{...c,is_hidden:0,report_count:0}:c));
     } catch(e) { alert(e.message); }
   }
@@ -376,7 +368,6 @@ function Comments({ videoId, user, onAuthed, onSignOut, onUpdateUser }) {
 // ── Video Modal ────────────────────────────────────────
 function VideoModal({ video: initialVideo, videos, onNavigate, onVideoUpdated, onClose, user, onAuthed, onSignOut, onUpdateUser }) {
   const overlayRef             = useRef(null);
-  const iframeRef               = useRef(null);
   const viewSentForId          = useRef(null);
   const [video, setVideo]      = useState(initialVideo);
   const [copied, setCopied]    = useState(false);
@@ -446,29 +437,13 @@ function VideoModal({ video: initialVideo, videos, onNavigate, onVideoUpdated, o
     return () => clearTimeout(timer);
   }, [video.id, user]);
 
-  // Auto-advance to the next video when this one finishes playing
-  useEffect(() => {
-    let cancelled = false;
-    let player = null;
-    (async () => {
-      const pjs = await waitForPlayerjs();
-      if (cancelled || !pjs || !iframeRef.current) return;
-      player = new pjs.Player(iframeRef.current);
-      player.on('ready', () => {
-        if (cancelled) return;
-        player.on('ended', () => { if (!cancelled) goNext(); });
-      });
-    })();
-    return () => { cancelled = true; };
-  }, [video.bunny_video_id, nextVideo && nextVideo.id]);
-
   return (
     <div className="overlay" ref={overlayRef} onMouseDown={e=>{if(e.target===overlayRef.current)onClose();}}>
       <div className="modal">
         <button className="modal-close" onClick={onClose}>×</button>
 
         <div className="video-container">
-          <iframe key={video.bunny_video_id} ref={iframeRef} src={bunnyEmbed(video.bunny_video_id)} allowFullScreen allow="autoplay"
+          <iframe key={video.bunny_video_id} src={bunnyEmbed(video.bunny_video_id)} allowFullScreen allow="autoplay"
             style={{position:'absolute',top:0,left:0,width:'100%',height:'100%',border:'none'}} />
         </div>
 
@@ -592,6 +567,69 @@ function AddVideoPanel({ onAdded }) {
   );
 }
 
+// ── FAQ Section ─────────────────────────────────────────
+function FAQSection() {
+  const [openIndex, setOpenIndex] = useState(null);
+  return (
+    <section className="site-section">
+      <h2 className="site-section-title">FAQs</h2>
+      <div className="faq-list">
+        {FAQS.map((item, i) => (
+          <div key={i} className="faq-item">
+            <button className="faq-question" onClick={()=>setOpenIndex(openIndex===i?null:i)} type="button">
+              <span>{item.q}</span>
+              <span className="faq-caret">{openIndex===i?'−':'+'}</span>
+            </button>
+            {openIndex===i && <p className="faq-answer">{item.a}</p>}
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+// ── Contact Section ─────────────────────────────────────
+function ContactSection() {
+  const [name, setName]       = useState('');
+  const [email, setEmail]     = useState('');
+  const [message, setMessage] = useState('');
+  const [busy, setBusy]       = useState(false);
+  const [sent, setSent]       = useState(false);
+  const [error, setError]     = useState(null);
+
+  async function submit(e) {
+    e.preventDefault(); setBusy(true); setError(null); setSent(false);
+    try {
+      await api('/api/contact', { method:'POST', body: JSON.stringify({ name, email, message }) });
+      setSent(true); setName(''); setEmail(''); setMessage('');
+    } catch(e) { setError(e.message); }
+    finally { setBusy(false); }
+  }
+
+  return (
+    <section className="site-section">
+      <h2 className="site-section-title">Contact Me</h2>
+      <div className="contact-layout">
+        <form className="contact-form" onSubmit={submit}>
+          <input type="text" placeholder="Your name" value={name} onChange={e=>setName(e.target.value)} maxLength={100} required />
+          <input type="email" placeholder="Your email" value={email} onChange={e=>setEmail(e.target.value)} required />
+          <textarea placeholder="Message" rows={4} value={message} onChange={e=>setMessage(e.target.value)} maxLength={2000} required />
+          <button type="submit" className="btn-primary" disabled={busy}>{busy?'Sending…':'Send message'}</button>
+          {sent && <p style={{color:'#22c55e',fontSize:13,margin:0}}>Thanks — your message has been sent.</p>}
+          {error && <p className="form-error">{error}</p>}
+        </form>
+        <div className="social-links">
+          {SOCIAL_LINKS.map(s => (
+            <a key={s.label} href={s.href} target="_blank" rel="noopener noreferrer" className="social-badge" title={s.label}>
+              {s.initials}
+            </a>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
 // ── Main Gallery ───────────────────────────────────────
 export default function ClownDanceGallery() {
   const [videos, setVideos]     = useState([]);
@@ -599,6 +637,7 @@ export default function ClownDanceGallery() {
   const [selected, setSelected] = useState(null);
   const [user, setUser]         = useState(null);
   const [showAuth, setShowAuth] = useState(false);
+  const [showAllVideos, setShowAllVideos] = useState(false);
 
   useEffect(() => {
     api('/api/auth/me').then(setUser).catch(()=>setUser(null));
@@ -628,6 +667,8 @@ export default function ClownDanceGallery() {
   function handleVideoUpdated(updated) {
     setVideos(prev => prev.map(v => v.id === updated.id ? { ...v, ...updated } : v));
   }
+
+  const visibleVideos = showAllVideos ? videos : videos.slice(0, INITIAL_VIDEOS_SHOWN);
 
   // Handle browser back/forward buttons
   useEffect(() => {
@@ -734,6 +775,22 @@ export default function ClownDanceGallery() {
         .add-video-panel input { background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 4px; color: #f5f5f5; padding: 8px 10px; font-family: inherit; font-size: 13px; width: 100%; }
         .empty-state { max-width: 1180px; margin: 60px auto; text-align: center; color: #555; }
 
+        .site-section { max-width: 1180px; margin: 64px auto 0; }
+        .site-section-title { font-family: 'Fraunces', serif; font-size: 26px; font-weight: 700; margin-bottom: 20px; }
+        .faq-list { display: flex; flex-direction: column; gap: 8px; }
+        .faq-item { background: #141414; border: 1px solid #1e1e1e; border-radius: 6px; overflow: hidden; }
+        .faq-question { width: 100%; display: flex; justify-content: space-between; align-items: center; gap: 12px; background: none; border: none; color: #f5f5f5; font-family: inherit; font-size: 14px; font-weight: 600; padding: 14px 16px; cursor: pointer; text-align: left; }
+        .faq-caret { color: #e5231b; font-size: 18px; flex-shrink: 0; }
+        .faq-answer { padding: 0 16px 16px; margin: 0; color: #8a8a8a; font-size: 13px; line-height: 1.6; }
+        .contact-layout { display: flex; gap: 32px; flex-wrap: wrap; align-items: flex-start; }
+        .contact-form { flex: 1 1 320px; display: flex; flex-direction: column; gap: 10px; background: #141414; border: 1px solid #1e1e1e; border-radius: 6px; padding: 20px; }
+        .contact-form input, .contact-form textarea { background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 4px; color: #f5f5f5; padding: 8px 10px; font-family: inherit; font-size: 13px; outline: none; transition: border-color 0.15s; }
+        .contact-form input:focus, .contact-form textarea:focus { border-color: #e5231b; }
+        .contact-form textarea { resize: vertical; }
+        .social-links { display: flex; gap: 12px; flex-wrap: wrap; padding-top: 4px; }
+        .social-badge { width: 44px; height: 44px; border-radius: 50%; background: #1a1a1a; border: 1px solid #2a2a2a; color: #f5f5f5; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; text-decoration: none; transition: border-color 0.15s, color 0.15s; }
+        .social-badge:hover { border-color: #e5231b; color: #e5231b; }
+
         /* ── MOBILE RESPONSIVE ── */
         @media (max-width: 600px) {
           .page { padding: 20px 16px 60px; }
@@ -760,6 +817,9 @@ export default function ClownDanceGallery() {
           .auth-panel { padding: 12px; }
           .vote-btn { padding: 2px 6px; font-size: 11px; }
           .add-video-panel { margin: 20px 0 0; padding: 16px; }
+          .site-section { margin-top: 40px; }
+          .site-section-title { font-size: 20px; }
+          .contact-layout { flex-direction: column; gap: 20px; }
         }
         @media (max-width: 480px) {
           .grid { grid-template-columns: 1fr; }
@@ -796,7 +856,7 @@ export default function ClownDanceGallery() {
       )}
 
       <div className="grid">
-        {videos.map(v => (
+        {visibleVideos.map(v => (
           <button key={v.id} className="card" onClick={()=>openVideo(v)}>
             <div className="card-thumb-wrap">
               {v.thumbnail_url
@@ -819,9 +879,28 @@ export default function ClownDanceGallery() {
         ))}
       </div>
 
+      {!showAllVideos && videos.length > INITIAL_VIDEOS_SHOWN && (
+        <div style={{textAlign:'center', maxWidth:1180, margin:'20px auto 0'}}>
+          <button className="btn-ghost" onClick={()=>setShowAllVideos(true)} type="button">
+            View more videos ({videos.length - INITIAL_VIDEOS_SHOWN} more)
+          </button>
+        </div>
+      )}
+
       {user?.is_admin && (
         <AddVideoPanel onAdded={v => setVideos(prev=>[v,...prev])} />
       )}
+
+      <FAQSection />
+
+      <section className="site-section">
+        <h2 className="site-section-title">Join the Conversation</h2>
+        <div className="comments" style={{padding:0}}>
+          <Comments kind="site" user={user} onAuthed={setUser} onSignOut={handleSignOut} onUpdateUser={setUser} />
+        </div>
+      </section>
+
+      <ContactSection />
 
       {showAuth && !user && (
         <div className="overlay" onMouseDown={e=>{if(e.target===e.currentTarget)setShowAuth(false);}}>
