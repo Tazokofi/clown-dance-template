@@ -8,8 +8,19 @@ export const SITE = {
   nameAccent: 'Dance',
   nameSuffix: 'Gallery',
   heading: 'This is me, dressed as a clown while dancing.',
-  headingLine2: 'Come and join the conversation',
+  headingLine2: 'Please watch videos, like, and comment.',
   dateRange: 'May – July 2026',
+  // Brand accent color, used throughout the site for buttons, links,
+  // active states, and the "Dance" word in the logo. accentColorHover
+  // is what buttons fade to on hover/press — usually the same color,
+  // just ~15-20% darker.
+  accentColor: '#e5231b',
+  accentColorHover: '#c41d17',
+  // Your Stripe Payment Link for the "Tip the Clown" button (Stripe
+  // Dashboard -> Payment Links -> New -> "Customers choose what to pay").
+  // Replace '#' with the real https://buy.stripe.com/... URL once you've
+  // created it, or point this at a Ko-fi/BuyMeACoffee/etc. link instead.
+  tipUrl: '#',
 };
 
 export const BUNNY_LIBRARY_ID = '682865';
@@ -27,10 +38,20 @@ export const FAQS = [
 ];
 
 // Placeholder social links — swap in your real profile URLs.
+// `platform` picks which logo icon renders (see SocialIcon in
+// ClownDanceGallery.jsx) — leave it alone unless you're adding a new
+// platform.
 export const SOCIAL_LINKS = [
-  { label: 'YouTube', initials: 'YT', href: '#' },
-  { label: 'TikTok', initials: 'TT', href: '#' },
-  { label: 'X / Twitter', initials: 'X', href: '#' },
-  { label: 'Rumble', initials: 'RB', href: '#' },
-  { label: 'Telegram', initials: 'TG', href: '#' },
+  { label: 'YouTube', platform: 'youtube', href: '#' },
+  { label: 'TikTok', platform: 'tiktok', href: '#' },
+  { label: 'X / Twitter', platform: 'x', href: '#' },
+  { label: 'Rumble', platform: 'rumble', href: '#' },
+  { label: 'Telegram', platform: 'telegram', href: '#' },
+];
+
+// Placeholder direct-chat contact info — replace with your real Signal
+// and WhatsApp details (or add/remove entries).
+export const CHAT_CONTACTS = [
+  { label: 'Signal', value: 'ApplePie.420', href: 'https://signal.me/#u/TGNS.420' },
+  { label: 'WhatsApp', value: '+1 (987) 239-4628', href: 'https://wa.me/19872394628' },
 ];

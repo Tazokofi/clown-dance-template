@@ -1,11 +1,18 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import { SITE, BUNNY_LIBRARY_ID, BUNNY_CDN, INITIAL_VIDEOS_SHOWN, FAQS, SOCIAL_LINKS } from "./config.js";
+import { SITE, BUNNY_LIBRARY_ID, BUNNY_CDN, INITIAL_VIDEOS_SHOWN, FAQS, SOCIAL_LINKS, CHAT_CONTACTS } from "./config.js";
 
 function bunnyEmbed(videoId) {
   return `https://iframe.mediadelivery.net/embed/${BUNNY_LIBRARY_ID}/${videoId}?autoplay=true&preload=true`;
 }
 function bunnyThumb(videoId) {
   return `https://${BUNNY_CDN}/${videoId}/thumbnail.jpg`;
+}
+
+// Converts SITE.accentColor ('#rrggbb') to an "r, g, b" string so the
+// stylesheet below can build translucent tints of it with rgba(var(--accent-rgb), alpha).
+function hexToRgb(hex) {
+  const m = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex || '');
+  return m ? `${parseInt(m[1],16)}, ${parseInt(m[2],16)}, ${parseInt(m[3],16)}` : '229, 35, 27';
 }
 
 function formatDate(ts) {
@@ -53,7 +60,7 @@ async function api(path, options = {}) {
 function Avatar({ url, name, size = 32 }) {
   const initials = (name||'?').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
   if (url) return <img src={url} alt={name} style={{width:size,height:size,borderRadius:'50%',objectFit:'cover',flexShrink:0}} />;
-  return <div style={{width:size,height:size,borderRadius:'50%',background:'#e5231b',color:'#fff',display:'flex',alignItems:'center',justifyContent:'center',fontSize:size*0.38,fontWeight:700,flexShrink:0}}>{initials}</div>;
+  return <div style={{width:size,height:size,borderRadius:'50%',background:'var(--accent)',color:'#fff',display:'flex',alignItems:'center',justifyContent:'center',fontSize:size*0.38,fontWeight:700,flexShrink:0}}>{initials}</div>;
 }
 
 // ── Auth Panel ─────────────────────────────────────────
@@ -122,7 +129,7 @@ function AvatarPicker({ user, onUpdated }) {
           <button className="link-btn" onClick={()=>setOpen(o=>!o)} type="button">
             {open ? 'Close' : user.avatar_url ? 'Change avatar' : 'Choose avatar'}
           </button>
-          {error && <span style={{color:'#e5231b',fontSize:11,marginLeft:6}}>{error}</span>}
+          {error && <span style={{color:'var(--accent)',fontSize:11,marginLeft:6}}>{error}</span>}
         </div>
       </div>
       {open && (
@@ -173,9 +180,9 @@ function Comment({ c, user, onReply, onVote, onReport, onDelete, onUnhide, depth
   if (hidden) return null;
 
   return (
-    <li className="comment" style={{marginLeft:depth>0?32:0, borderLeft:depth>0?'2px solid #2a2a2a':'2px solid #e5231b', opacity:c.is_hidden===1?0.5:1}}>
+    <li className="comment" style={{marginLeft:depth>0?32:0, borderLeft:depth>0?'2px solid #2a2a2a':'2px solid var(--accent)', opacity:c.is_hidden===1?0.5:1}}>
       {c.is_hidden===1 && user?.is_admin && (
-        <div style={{fontSize:11,color:'#e5231b',marginBottom:4}}>⚠ Hidden ({c.report_count} reports)
+        <div style={{fontSize:11,color:'var(--accent)',marginBottom:4}}>⚠ Hidden ({c.report_count} reports)
           <button className="link-btn" style={{marginLeft:8}} onClick={()=>onUnhide(c.id)}>Restore</button>
         </div>
       )}
@@ -322,7 +329,7 @@ function Comments({ kind = 'video', videoId, user, onAuthed, onSignOut, onUpdate
         )}
       </div>
       {comments===null && !error && <p className="muted">Loading…</p>}
-      {error && <p style={{color:'#e5231b',fontSize:13}}>{error}</p>}
+      {error && <p style={{color:'var(--accent)',fontSize:13}}>{error}</p>}
       {comments?.length===0 && <p className="muted">No comments yet. Be the first.</p>}
 
       <ul className="comments-list">
@@ -475,9 +482,12 @@ function VideoModal({ video: initialVideo, videos, onNavigate, onVideoUpdated, o
                 className={`video-vote-btn dislike ${video.my_vote===-1?'active':''}`}
                 onClick={()=>handleVideoVote(-1)} type="button"
                 title={user?'Dislike':'Sign in to dislike'}>
-                👎 {video.dislike_count > 0 ? formatCount(video.dislike_count) : ''}
+                👎 {video.dislike_count > 0 ? formatCount(video.dislike_count) : 'Dislike'}
               </button>
             </div>
+            <a className="tip-btn" href={SITE.tipUrl} target="_blank" rel="noopener noreferrer">
+              🤡 Tip the Clown
+            </a>
             <button className="video-share-btn" onClick={handleShare} type="button">
               {copied ? '✓ Copied!' : '↗ Share'}
             </button>
@@ -572,6 +582,7 @@ function FAQSection() {
   const [openIndex, setOpenIndex] = useState(null);
   return (
     <section className="site-section">
+      <span className="site-section-eyebrow">FAQ</span>
       <h2 className="site-section-title">FAQs</h2>
       <div className="faq-list">
         {FAQS.map((item, i) => (
@@ -588,8 +599,45 @@ function FAQSection() {
   );
 }
 
+// ── Social platform icons (inline SVG, no external requests) ──
+function SocialIcon({ platform }) {
+  switch (platform) {
+    case 'youtube':
+      return (
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true">
+          <path d="M23.5 6.2c-.3-1.1-1.1-1.9-2.2-2.2C19.3 3.5 12 3.5 12 3.5s-7.3 0-9.3.5c-1.1.3-1.9 1.1-2.2 2.2C0 8.2 0 12 0 12s0 3.8.5 5.8c.3 1.1 1.1 1.9 2.2 2.2 2 .5 9.3.5 9.3.5s7.3 0 9.3-.5c1.1-.3 1.9-1.1 2.2-2.2.5-2 .5-5.8.5-5.8s0-3.8-.5-5.8zM9.6 15.5V8.5l6.4 3.5-6.4 3.5z" />
+        </svg>
+      );
+    case 'tiktok':
+      return (
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true">
+          <path d="M16.6 5.82s.51.5 0 0A4.278 4.278 0 0 1 15.54 3h-3.09v12.4a2.592 2.592 0 0 1-2.59 2.5c-1.42 0-2.6-1.16-2.6-2.6 0-1.72 1.66-3.01 3.37-2.48V9.66c-3.45-.46-6.47 2.22-6.47 5.64 0 3.33 2.76 5.7 5.69 5.7 3.14 0 5.69-2.55 5.69-5.7V9.01a7.35 7.35 0 0 0 4.3 1.38V7.3s-1.88.09-3.24-1.48z" />
+        </svg>
+      );
+    case 'x':
+      return (
+        <svg viewBox="0 0 24 24" width="17" height="17" fill="currentColor" aria-hidden="true">
+          <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+        </svg>
+      );
+    case 'telegram':
+      return (
+        <svg viewBox="0 0 24 24" width="19" height="19" fill="currentColor" aria-hidden="true">
+          <path d="M21.94 4.36c.28-1.17-.94-2.1-2.03-1.66L2.4 9.74c-1.2.47-1.19 2.16.02 2.62l4.29 1.61 1.66 5.31c.2.65 1.03.85 1.51.36l2.4-2.47 4.4 3.24c.83.61 2.02.17 2.25-.83l3-13.2zM8.36 13.16l9.4-6.3c.24-.16.5.15.29.34l-7.7 6.95c-.3.27-.49.63-.55 1.03l-.25 1.75-1.19-3.77z" />
+        </svg>
+      );
+    case 'rumble':
+    default:
+      // Rumble's exact mark isn't reproduced here — this is a bold
+      // monogram standing in for it, still visually distinct from the
+      // four true logo glyphs above.
+      return <span className="social-badge-text">R</span>;
+  }
+}
+
 // ── Contact Section ─────────────────────────────────────
 function ContactSection() {
+  const [openIndex, setOpenIndex] = useState(null);
   const [name, setName]       = useState('');
   const [email, setEmail]     = useState('');
   const [message, setMessage] = useState('');
@@ -606,24 +654,70 @@ function ContactSection() {
     finally { setBusy(false); }
   }
 
+  function toggle(i) { setOpenIndex(openIndex === i ? null : i); }
+
   return (
     <section className="site-section">
+      <span className="site-section-eyebrow">Get In Touch</span>
       <h2 className="site-section-title">Contact Me</h2>
-      <div className="contact-layout">
-        <form className="contact-form" onSubmit={submit}>
-          <input type="text" placeholder="Your name" value={name} onChange={e=>setName(e.target.value)} maxLength={100} required />
-          <input type="email" placeholder="Your email" value={email} onChange={e=>setEmail(e.target.value)} required />
-          <textarea placeholder="Message" rows={4} value={message} onChange={e=>setMessage(e.target.value)} maxLength={2000} required />
-          <button type="submit" className="btn-primary" disabled={busy}>{busy?'Sending…':'Send message'}</button>
-          {sent && <p style={{color:'#22c55e',fontSize:13,margin:0}}>Thanks — your message has been sent.</p>}
-          {error && <p className="form-error">{error}</p>}
-        </form>
-        <div className="social-links">
-          {SOCIAL_LINKS.map(s => (
-            <a key={s.label} href={s.href} target="_blank" rel="noopener noreferrer" className="social-badge" title={s.label}>
-              {s.initials}
-            </a>
-          ))}
+      <div className="faq-list">
+        <div className="faq-item">
+          <button className="faq-question" onClick={()=>toggle(0)} type="button">
+            <span>Direct Message</span>
+            <span className="faq-caret">{openIndex===0?'−':'+'}</span>
+          </button>
+          {openIndex===0 && (
+            <div className="faq-answer">
+              <form className="contact-form" onSubmit={submit}>
+                <input type="text" placeholder="Your name" value={name} onChange={e=>setName(e.target.value)} maxLength={100} required />
+                <input type="email" placeholder="Your email" value={email} onChange={e=>setEmail(e.target.value)} required />
+                <textarea placeholder="Message" rows={4} value={message} onChange={e=>setMessage(e.target.value)} maxLength={2000} required />
+                <button type="submit" className="btn-primary" disabled={busy}>{busy?'Sending…':'Send message'}</button>
+                {sent && <p style={{color:'#22c55e',fontSize:13,margin:0}}>Thanks — your message has been sent.</p>}
+                {error && <p className="form-error">{error}</p>}
+              </form>
+            </div>
+          )}
+        </div>
+
+        <div className="faq-item">
+          <button className="faq-question" onClick={()=>toggle(1)} type="button">
+            <span>Social Media</span>
+            <span className="faq-caret">{openIndex===1?'−':'+'}</span>
+          </button>
+          {openIndex===1 && (
+            <div className="faq-answer">
+              <div className="social-links">
+                {SOCIAL_LINKS.map(s => (
+                  <a key={s.label} href={s.href} target="_blank" rel="noopener noreferrer" className="social-row">
+                    <span className="social-badge" aria-hidden="true">
+                      <SocialIcon platform={s.platform} />
+                    </span>
+                    <span className="social-label">{s.label}</span>
+                  </a>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+
+        <div className="faq-item">
+          <button className="faq-question" onClick={()=>toggle(2)} type="button">
+            <span>Chat with me</span>
+            <span className="faq-caret">{openIndex===2?'−':'+'}</span>
+          </button>
+          {openIndex===2 && (
+            <div className="faq-answer">
+              <div className="chat-links">
+                {CHAT_CONTACTS.map(c => (
+                  <a key={c.label} href={c.href} target="_blank" rel="noopener noreferrer" className="chat-link">
+                    <strong>{c.label}</strong>
+                    <span>{c.value}</span>
+                  </a>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </section>
@@ -638,6 +732,10 @@ export default function ClownDanceGallery() {
   const [user, setUser]         = useState(null);
   const [showAuth, setShowAuth] = useState(false);
   const [showAllVideos, setShowAllVideos] = useState(false);
+
+  useEffect(() => {
+    document.title = `${SITE.nameMain} ${SITE.nameAccent} ${SITE.nameSuffix}`;
+  }, []);
 
   useEffect(() => {
     api('/api/auth/me').then(setUser).catch(()=>setUser(null));
@@ -691,7 +789,7 @@ export default function ClownDanceGallery() {
   }
 
   return (
-    <div className="page">
+    <div className="page" style={{ '--accent': SITE.accentColor, '--accent-hover': SITE.accentColorHover, '--accent-rgb': hexToRgb(SITE.accentColor) }}>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,700;9..144,900&family=Inter:wght@400;500;600&display=swap');
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -699,14 +797,14 @@ export default function ClownDanceGallery() {
         .page { background: #0a0a0a; color: #f5f5f5; font-family: 'Inter', sans-serif; min-height: 100vh; padding: 48px 32px 80px; }
         .top-bar { max-width: 1180px; margin: 0 auto 32px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
         .site-title { font-family: 'Fraunces', serif; font-size: clamp(20px,3vw,28px); font-weight: 900; }
-        .site-title span { color: #e5231b; }
+        .site-title span { color: var(--accent); }
         .top-bar-right { display: flex; align-items: center; gap: 12px; font-size: 13px; color: #8a8a8a; }
         .header { max-width: 1180px; margin: 0 auto 40px; }
         .header h1 { font-family: 'Fraunces', serif; font-weight: 700; font-size: clamp(26px,4vw,42px); line-height: 1.15; margin-bottom: 8px; }
         .header p { color: #8a8a8a; font-size: 15px; }
         .grid { max-width: 1180px; margin: 0 auto; display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px; }
         .card { background: #141414; border: 1px solid #1e1e1e; border-radius: 6px; overflow: hidden; cursor: pointer; text-align: left; padding: 0; color: inherit; font: inherit; transition: transform 0.18s, border-color 0.18s; }
-        .card:hover { transform: translateY(-2px); border-color: #e5231b; }
+        .card:hover { transform: translateY(-2px); border-color: var(--accent); }
         .card-thumb-wrap { position: relative; aspect-ratio: 16/9; background: #111; overflow: hidden; }
         .card-thumb { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform 0.25s; }
         .card:hover .card-thumb { transform: scale(1.04); }
@@ -730,14 +828,16 @@ export default function ClownDanceGallery() {
         .video-vote-btn { background: transparent; border: none; color: #8a8a8a; font-size: 13px; padding: 7px 14px; cursor: pointer; font-family: inherit; display: flex; align-items: center; gap: 5px; transition: background 0.15s, color 0.15s; }
         .video-vote-btn:hover { background: #1e1e1e; color: #f5f5f5; }
         .video-vote-btn.like.active { color: #22c55e; }
-        .video-vote-btn.dislike.active { color: #e5231b; }
+        .video-vote-btn.dislike.active { color: var(--accent); }
         .vote-divider { width: 1px; background: #2a2a2a; flex-shrink: 0; }
         .video-share-btn { background: #1e1e1e; border: 1px solid #2a2a2a; color: #f5f5f5; font-size: 13px; padding: 7px 16px; border-radius: 20px; cursor: pointer; font-family: inherit; transition: background 0.15s; }
         .video-share-btn:hover { background: #2a2a2a; }
+        .tip-btn { background: var(--accent); border: 1px solid var(--accent); color: #fff; font-size: 13px; font-weight: 600; padding: 7px 16px; border-radius: 20px; cursor: pointer; font-family: inherit; text-decoration: none; display: inline-flex; align-items: center; transition: background 0.15s, border-color 0.15s; }
+        .tip-btn:hover { background: var(--accent-hover); border-color: var(--accent-hover); }
         .sort-bar { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
         .sort-btn { background: transparent; border: 1px solid #2a2a2a; color: #555; font-size: 11px; padding: 4px 10px; border-radius: 12px; cursor: pointer; font-family: inherit; transition: all 0.15s; white-space: nowrap; }
         .sort-btn:hover { border-color: #555; color: #f5f5f5; }
-        .sort-btn.active { border-color: #e5231b; color: #f5f5f5; background: rgba(229,35,27,0.1); }
+        .sort-btn.active { border-color: var(--accent); color: #f5f5f5; background: rgba(var(--accent-rgb),0.1); }
         .comments { padding: 16px 20px 24px; }
         .comments-heading { font-size: 15px; font-weight: 600; margin-bottom: 12px; color: #f5f5f5; text-align: left; }
         .comments-list { list-style: none; display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; max-height: 360px; overflow-y: auto; padding-right: 4px; }
@@ -748,27 +848,27 @@ export default function ClownDanceGallery() {
         .auth-note { font-size: 13px; color: #8a8a8a; margin-bottom: 10px; }
         .auth-tabs { display: flex; gap: 6px; margin-bottom: 10px; }
         .auth-tabs button { background: none; border: 1px solid #2a2a2a; color: #8a8a8a; font-size: 12px; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-family: inherit; transition: all 0.15s; }
-        .auth-tabs button.active { border-color: #e5231b; color: #f5f5f5; }
+        .auth-tabs button.active { border-color: var(--accent); color: #f5f5f5; }
         .auth-form, .comment-form { display: flex; flex-direction: column; gap: 8px; }
         .auth-form input, .comment-form textarea { background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 4px; color: #f5f5f5; padding: 8px 10px; font-family: inherit; font-size: 13px; outline: none; transition: border-color 0.15s; }
-        .auth-form input:focus, .comment-form textarea:focus { border-color: #e5231b; }
+        .auth-form input:focus, .comment-form textarea:focus { border-color: var(--accent); }
         .comment-form textarea { resize: vertical; }
-        .auth-form button[type=submit], .comment-form button[type=submit], .btn-primary { background: #e5231b; color: #fff; border: none; border-radius: 4px; padding: 8px 16px; font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit; transition: background 0.15s; align-self: flex-start; }
-        .auth-form button:hover, .comment-form button:hover, .btn-primary:hover { background: #c41d17; }
+        .auth-form button[type=submit], .comment-form button[type=submit], .btn-primary { background: var(--accent); color: #fff; border: none; border-radius: 4px; padding: 8px 16px; font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit; transition: background 0.15s; align-self: flex-start; }
+        .auth-form button:hover, .comment-form button:hover, .btn-primary:hover { background: var(--accent-hover); }
         .auth-form button:disabled, .comment-form button:disabled { opacity: 0.6; cursor: default; }
         .btn-ghost { background: transparent; border: 1px solid #333; color: #8a8a8a; border-radius: 4px; padding: 6px 12px; font-size: 12px; cursor: pointer; font-family: inherit; }
-        .link-btn { background: none; border: none; color: #e5231b; font-size: 12px; cursor: pointer; padding: 0; font-family: inherit; }
+        .link-btn { background: none; border: none; color: var(--accent); font-size: 12px; cursor: pointer; padding: 0; font-family: inherit; }
         .link-btn:hover { text-decoration: underline; }
         .avatar-grid { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; padding: 10px; background: #141414; border: 1px solid #1e1e1e; border-radius: 6px; }
         .avatar-choice { background: none; border: 2px solid transparent; border-radius: 50%; padding: 2px; line-height: 0; cursor: pointer; transition: border-color 0.15s; }
         .avatar-choice:hover { border-color: #555; }
-        .avatar-choice.selected { border-color: #e5231b; }
+        .avatar-choice.selected { border-color: var(--accent); }
         .avatar-choice:disabled { opacity: 0.6; cursor: default; }
         .vote-btn { background: none; border: 1px solid #2a2a2a; color: #8a8a8a; font-size: 12px; padding: 3px 8px; border-radius: 3px; cursor: pointer; font-family: inherit; transition: all 0.15s; }
         .vote-btn:hover { border-color: #555; color: #f5f5f5; }
         .vote-btn.active-like { border-color: #22c55e; color: #22c55e; background: rgba(34,197,94,0.08); }
-        .vote-btn.active-dislike { border-color: #e5231b; color: #e5231b; background: rgba(229,35,27,0.08); }
-        .form-error { color: #e5231b; font-size: 12px; }
+        .vote-btn.active-dislike { border-color: var(--accent); color: var(--accent); background: rgba(var(--accent-rgb),0.08); }
+        .form-error { color: var(--accent); font-size: 12px; }
         .muted { font-size: 12px; color: #555; }
         .report-modal { background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 6px; padding: 12px; margin-top: 8px; }
         .add-video-panel { max-width: 1180px; margin: 32px auto 0; background: #141414; border: 1px solid #1e1e1e; border-radius: 6px; padding: 20px; }
@@ -780,16 +880,29 @@ export default function ClownDanceGallery() {
         .faq-list { display: flex; flex-direction: column; gap: 8px; }
         .faq-item { background: #141414; border: 1px solid #1e1e1e; border-radius: 6px; overflow: hidden; }
         .faq-question { width: 100%; display: flex; justify-content: space-between; align-items: center; gap: 12px; background: none; border: none; color: #f5f5f5; font-family: inherit; font-size: 14px; font-weight: 600; padding: 14px 16px; cursor: pointer; text-align: left; }
-        .faq-caret { color: #e5231b; font-size: 18px; flex-shrink: 0; }
+        .faq-caret { color: var(--accent); font-size: 18px; flex-shrink: 0; }
         .faq-answer { padding: 0 16px 16px; margin: 0; color: #8a8a8a; font-size: 13px; line-height: 1.6; }
-        .contact-layout { display: flex; gap: 32px; flex-wrap: wrap; align-items: flex-start; }
-        .contact-form { flex: 1 1 320px; display: flex; flex-direction: column; gap: 10px; background: #141414; border: 1px solid #1e1e1e; border-radius: 6px; padding: 20px; }
+        .contact-form { display: flex; flex-direction: column; gap: 10px; }
         .contact-form input, .contact-form textarea { background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 4px; color: #f5f5f5; padding: 8px 10px; font-family: inherit; font-size: 13px; outline: none; transition: border-color 0.15s; }
-        .contact-form input:focus, .contact-form textarea:focus { border-color: #e5231b; }
+        .contact-form input:focus, .contact-form textarea:focus { border-color: var(--accent); }
         .contact-form textarea { resize: vertical; }
-        .social-links { display: flex; gap: 12px; flex-wrap: wrap; padding-top: 4px; }
+        .social-links { display: flex; flex-direction: column; gap: 8px; }
+        .social-row { display: flex; align-items: center; gap: 12px; text-decoration: none; color: #f5f5f5; padding: 6px; border-radius: 8px; transition: background 0.15s; }
+        .social-row:hover { background: #1a1a1a; }
+        .social-row:hover .social-badge { border-color: var(--accent); color: var(--accent); }
+        .social-label { font-size: 14px; font-weight: 600; }
+        .chat-links { display: flex; flex-direction: column; gap: 10px; }
+        .chat-link { display: flex; flex-direction: column; gap: 2px; background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 6px; padding: 10px 12px; text-decoration: none; color: #f5f5f5; transition: border-color 0.15s; }
+        .chat-link:hover { border-color: var(--accent); }
+        .chat-link strong { font-size: 13px; }
+        .chat-link span { font-size: 12px; color: #8a8a8a; }
         .social-badge { width: 44px; height: 44px; border-radius: 50%; background: #1a1a1a; border: 1px solid #2a2a2a; color: #f5f5f5; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; text-decoration: none; transition: border-color 0.15s, color 0.15s; }
-        .social-badge:hover { border-color: #e5231b; color: #e5231b; }
+        .social-badge:hover { border-color: var(--accent); color: var(--accent); }
+        .social-badge svg { display: block; }
+        .social-badge-text { font-family: 'Fraunces', serif; font-size: 17px; font-weight: 900; font-style: italic; line-height: 1; }
+        .site-section-eyebrow { display: block; font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--accent); font-weight: 700; margin-bottom: 10px; }
+        .videos-section { margin-top: 8px; }
+        .section-divider { max-width: 1180px; margin: 56px auto 0; height: 1px; background: linear-gradient(90deg, transparent, #262626 15%, #262626 85%, transparent); }
 
         /* ── MOBILE RESPONSIVE ── */
         @media (max-width: 600px) {
@@ -811,6 +924,7 @@ export default function ClownDanceGallery() {
           .video-actions { gap: 8px; }
           .video-vote-btn { font-size: 12px; padding: 6px 10px; }
           .video-share-btn { font-size: 12px; padding: 6px 12px; }
+          .tip-btn { font-size: 12px; padding: 6px 12px; }
           .comments { padding: 12px 16px 80px; }
           .comments-list { max-height: 240px; }
           .comment { padding: 8px 10px; }
@@ -819,7 +933,9 @@ export default function ClownDanceGallery() {
           .add-video-panel { margin: 20px 0 0; padding: 16px; }
           .site-section { margin-top: 40px; }
           .site-section-title { font-size: 20px; }
-          .contact-layout { flex-direction: column; gap: 20px; }
+          .site-section-eyebrow { font-size: 10px; }
+          .section-divider { margin-top: 32px; }
+          .videos-section { margin-top: 0; }
         }
         @media (max-width: 480px) {
           .grid { grid-template-columns: 1fr; }
@@ -847,7 +963,11 @@ export default function ClownDanceGallery() {
         <p>{SITE.dateRange}</p>
       </header>
 
-      {loading && <div className="empty-state"><p>Loading videos…</p></div>}
+      <section className="site-section videos-section">
+        <span className="site-section-eyebrow">Watch</span>
+        <h2 className="site-section-title">Videos</h2>
+
+        {loading && <div className="empty-state"><p>Loading videos…</p></div>}
 
       {!loading && videos.length === 0 && (
         <div className="empty-state">
@@ -890,15 +1010,23 @@ export default function ClownDanceGallery() {
       {user?.is_admin && (
         <AddVideoPanel onAdded={v => setVideos(prev=>[v,...prev])} />
       )}
+      </section>
+
+      <div className="section-divider" />
 
       <FAQSection />
 
+      <div className="section-divider" />
+
       <section className="site-section">
+        <span className="site-section-eyebrow">Community</span>
         <h2 className="site-section-title">Join the Conversation</h2>
         <div className="comments" style={{padding:0}}>
           <Comments kind="site" user={user} onAuthed={setUser} onSignOut={handleSignOut} onUpdateUser={setUser} />
         </div>
       </section>
+
+      <div className="section-divider" />
 
       <ContactSection />
 
