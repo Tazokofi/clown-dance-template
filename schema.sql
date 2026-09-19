@@ -69,6 +69,7 @@ CREATE TABLE comments (
   created_at    INTEGER NOT NULL
 );
 CREATE INDEX idx_comments_video_id ON comments(video_id);
+CREATE INDEX idx_comments_user_id ON comments(user_id);
 
 CREATE TABLE comment_votes (
   comment_id INTEGER NOT NULL REFERENCES comments(id),

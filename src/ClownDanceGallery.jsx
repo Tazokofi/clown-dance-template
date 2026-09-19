@@ -191,6 +191,7 @@ function Comment({ c, user, onReply, onVote, onReport, onDelete, onUnhide, depth
         <div style={{flex:1,minWidth:0}}>
           <div style={{display:'flex',alignItems:'center',gap:8,flexWrap:'wrap',marginBottom:4}}>
             <span style={{fontWeight:600,fontSize:12,color:'#f5f5f5'}}>{c.author}</span>
+            {c.is_admin ? <span className="admin-badge">CLOWN</span> : null}
             <span style={{fontSize:11,color:'#555'}}>{formatDate(c.created_at)}</span>
           </div>
           <p style={{margin:0,fontSize:13,color:'#d0d0d0',wordBreak:'break-word',lineHeight:1.5}}>{c.text}</p>
@@ -581,7 +582,7 @@ function AddVideoPanel({ onAdded }) {
 function FAQSection() {
   const [openIndex, setOpenIndex] = useState(null);
   return (
-    <section className="site-section">
+    <section className="site-section" id="faq">
       <span className="site-section-eyebrow">FAQ</span>
       <h2 className="site-section-title">FAQs</h2>
       <div className="faq-list">
@@ -644,11 +645,12 @@ function ContactSection() {
   const [busy, setBusy]       = useState(false);
   const [sent, setSent]       = useState(false);
   const [error, setError]     = useState(null);
+  const [hp, setHp]           = useState('');
 
   async function submit(e) {
     e.preventDefault(); setBusy(true); setError(null); setSent(false);
     try {
-      await api('/api/contact', { method:'POST', body: JSON.stringify({ name, email, message }) });
+      await api('/api/contact', { method:'POST', body: JSON.stringify({ name, email, message, hp_field: hp }) });
       setSent(true); setName(''); setEmail(''); setMessage('');
     } catch(e) { setError(e.message); }
     finally { setBusy(false); }
@@ -657,7 +659,7 @@ function ContactSection() {
   function toggle(i) { setOpenIndex(openIndex === i ? null : i); }
 
   return (
-    <section className="site-section">
+    <section className="site-section" id="contact">
       <span className="site-section-eyebrow">Get In Touch</span>
       <h2 className="site-section-title">Contact Me</h2>
       <div className="faq-list">
@@ -672,6 +674,7 @@ function ContactSection() {
                 <input type="text" placeholder="Your name" value={name} onChange={e=>setName(e.target.value)} maxLength={100} required />
                 <input type="email" placeholder="Your email" value={email} onChange={e=>setEmail(e.target.value)} required />
                 <textarea placeholder="Message" rows={4} value={message} onChange={e=>setMessage(e.target.value)} maxLength={2000} required />
+                <input type="text" name="website" className="hp-field" value={hp} onChange={e=>setHp(e.target.value)} tabIndex={-1} autoComplete="off" aria-hidden="true" />
                 <button type="submit" className="btn-primary" disabled={busy}>{busy?'Sending…':'Send message'}</button>
                 {sent && <p style={{color:'#22c55e',fontSize:13,margin:0}}>Thanks — your message has been sent.</p>}
                 {error && <p className="form-error">{error}</p>}
@@ -799,6 +802,9 @@ export default function ClownDanceGallery() {
         .site-title { font-family: 'Fraunces', serif; font-size: clamp(20px,3vw,28px); font-weight: 900; }
         .site-title span { color: var(--accent); }
         .top-bar-right { display: flex; align-items: center; gap: 12px; font-size: 13px; color: #8a8a8a; }
+        .top-nav { display: flex; align-items: center; gap: 18px; }
+        .top-nav a { color: #8a8a8a; text-decoration: none; font-size: 13px; font-weight: 600; transition: color 0.15s; }
+        .top-nav a:hover { color: var(--accent); }
         .header { max-width: 1180px; margin: 0 auto 40px; }
         .header h1 { font-family: 'Fraunces', serif; font-weight: 700; font-size: clamp(26px,4vw,42px); line-height: 1.15; margin-bottom: 8px; }
         .header p { color: #8a8a8a; font-size: 15px; }
@@ -834,7 +840,9 @@ export default function ClownDanceGallery() {
         .video-share-btn:hover { background: #2a2a2a; }
         .tip-btn { background: var(--accent); border: 1px solid var(--accent); color: #fff; font-size: 13px; font-weight: 600; padding: 7px 16px; border-radius: 20px; cursor: pointer; font-family: inherit; text-decoration: none; display: inline-flex; align-items: center; transition: background 0.15s, border-color 0.15s; }
         .tip-btn:hover { background: var(--accent-hover); border-color: var(--accent-hover); }
+        .hp-field { position: absolute; left: -9999px; width: 1px; height: 1px; opacity: 0; overflow: hidden; }
         .tip-btn-nav { padding: 5px 14px; font-size: 12px; }
+        .admin-badge { background: var(--accent); color: #fff; font-size: 10px; font-weight: 700; letter-spacing: 0.05em; padding: 2px 7px; border-radius: 10px; text-transform: uppercase; line-height: 1.4; }
         .sort-bar { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
         .sort-btn { background: transparent; border: 1px solid #2a2a2a; color: #555; font-size: 11px; padding: 4px 10px; border-radius: 12px; cursor: pointer; font-family: inherit; transition: all 0.15s; white-space: nowrap; }
         .sort-btn:hover { border-color: #555; color: #f5f5f5; }
@@ -911,6 +919,8 @@ export default function ClownDanceGallery() {
           .top-bar { margin-bottom: 20px; }
           .site-title { font-size: 18px; }
           .top-bar-right { font-size: 12px; }
+          .top-nav { gap: 12px; font-size: 12px; }
+          .top-nav a { font-size: 12px; }
           .header { margin-bottom: 24px; }
           .header h1 { font-size: 22px; line-height: 1.2; }
           .header p { font-size: 13px; }
@@ -946,6 +956,12 @@ export default function ClownDanceGallery() {
 
       <div className="top-bar">
         <div className="site-title">{SITE.nameMain} <span>{SITE.nameAccent}</span> {SITE.nameSuffix}</div>
+        <nav className="top-nav">
+          <a href="#videos">Videos</a>
+          <a href="#community">Community</a>
+          <a href="#faq">FAQ</a>
+          <a href="#contact">Contact</a>
+        </nav>
         <div className="top-bar-right">
           <a className="tip-btn tip-btn-nav" href={SITE.tipUrl} target="_blank" rel="noopener noreferrer">
             🤡 Tip the Clown
@@ -967,7 +983,7 @@ export default function ClownDanceGallery() {
         <p>{SITE.dateRange}</p>
       </header>
 
-      <section className="site-section videos-section">
+      <section className="site-section videos-section" id="videos">
         <span className="site-section-eyebrow">Watch</span>
         <h2 className="site-section-title">Videos</h2>
 
@@ -1022,7 +1038,7 @@ export default function ClownDanceGallery() {
 
       <div className="section-divider" />
 
-      <section className="site-section">
+      <section className="site-section" id="community">
         <span className="site-section-eyebrow">Community</span>
         <h2 className="site-section-title">Join the Conversation</h2>
         <div className="comments" style={{padding:0}}>

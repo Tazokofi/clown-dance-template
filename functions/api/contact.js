@@ -5,6 +5,10 @@ export async function onRequestPost({ env, request }) {
   const name    = (body.name || '').toString().trim().slice(0, 100);
   const email   = (body.email || '').toString().trim().slice(0, 200);
   const message = (body.message || '').toString().trim().slice(0, 2000);
+  const hp_field = (body.hp_field || '').toString();
+  // Honeypot: real visitors never fill this hidden field. Bots that blindly fill
+  // every input do, so pretend success without sending anything.
+  if (hp_field) return json({ sent: true });
   if (!name || !email || !message) return err('Name, email and message are required');
 
   if (!env.RESEND_API_KEY || !env.CONTACT_TO_EMAIL) {
