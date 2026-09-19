@@ -834,6 +834,7 @@ export default function ClownDanceGallery() {
         .video-share-btn:hover { background: #2a2a2a; }
         .tip-btn { background: var(--accent); border: 1px solid var(--accent); color: #fff; font-size: 13px; font-weight: 600; padding: 7px 16px; border-radius: 20px; cursor: pointer; font-family: inherit; text-decoration: none; display: inline-flex; align-items: center; transition: background 0.15s, border-color 0.15s; }
         .tip-btn:hover { background: var(--accent-hover); border-color: var(--accent-hover); }
+        .tip-btn-nav { padding: 5px 14px; font-size: 12px; }
         .sort-bar { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
         .sort-btn { background: transparent; border: 1px solid #2a2a2a; color: #555; font-size: 11px; padding: 4px 10px; border-radius: 12px; cursor: pointer; font-family: inherit; transition: all 0.15s; white-space: nowrap; }
         .sort-btn:hover { border-color: #555; color: #f5f5f5; }
@@ -946,6 +947,9 @@ export default function ClownDanceGallery() {
       <div className="top-bar">
         <div className="site-title">{SITE.nameMain} <span>{SITE.nameAccent}</span> {SITE.nameSuffix}</div>
         <div className="top-bar-right">
+          <a className="tip-btn tip-btn-nav" href={SITE.tipUrl} target="_blank" rel="noopener noreferrer">
+            🤡 Tip the Clown
+          </a>
           {user ? (
             <>
               <Avatar url={user.avatar_url} name={user.name} size={26} />
