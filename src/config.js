@@ -50,7 +50,7 @@ export const SOCIAL_LINKS = [
 ];
 
 // Placeholder direct-chat contact info — replace with your real Signal
-// and WhatsApp details (or add/remove entries).
+// details (or add more entries, e.g. Telegram/Discord).
 export const CHAT_CONTACTS = [
   { label: 'Signal', value: 'ApplePie.420', href: 'https://signal.me/#u/TGNS.420' },
 ];
