@@ -807,7 +807,7 @@ export default function ClownDanceGallery() {
         @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,700;9..144,900&family=Inter:wght@400;500;600&display=swap');
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
         body { background: #0a0a0a; }
-        .page { background: #0a0a0a; color: #f5f5f5; font-family: 'Inter', sans-serif; min-height: 100vh; padding: 48px 32px 80px; }
+        .page { background: radial-gradient(ellipse 900px 900px at 8% 15%, rgba(var(--accent-rgb), 0.09), transparent 65%), radial-gradient(ellipse 900px 900px at 92% 70%, rgba(var(--accent-rgb), 0.09), transparent 65%), #0a0a0a; background-attachment: fixed; color: #f5f5f5; font-family: 'Inter', sans-serif; min-height: 100vh; padding: 48px 32px 80px; }
         .top-bar { max-width: 1180px; margin: 0 auto 32px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
         .site-title { font-family: 'Fraunces', serif; font-size: clamp(20px,3vw,28px); font-weight: 900; }
         .site-title span { color: var(--accent); }
