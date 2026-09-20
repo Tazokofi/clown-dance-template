@@ -80,7 +80,7 @@ export default function ClownDanceGallery() {
         .card { background: #141414; border: 1px solid #1e1e1e; border-radius: 6px; overflow: hidden; cursor: pointer; text-align: left; padding: 0; color: inherit; font: inherit; transition: transform 0.18s, border-color 0.18s; }
         .card:hover { transform: translateY(-2px); border-color: var(--accent); }
         .card-thumb-wrap { position: relative; aspect-ratio: 16/9; background: #111; overflow: hidden; }
-        .card-tag { position: absolute; top: 8px; left: 8px; z-index: 1; background: rgba(0,0,0,0.75); border: 1px solid var(--accent); color: #fff; font-size: 10px; font-weight: 600; padding: 3px 8px; border-radius: 10px; max-width: calc(100% - 16px); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .card-tag { position: absolute; top: 8px; left: 8px; z-index: 1; background: rgba(0,0,0,0.75); border: 1px solid rgba(255,255,255,0.18); color: var(--accent); font-size: 10px; font-weight: 600; padding: 3px 8px; border-radius: 10px; max-width: calc(100% - 16px); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
         .card-thumb { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform 0.25s; }
         .card:hover .card-thumb { transform: scale(1.04); }
         .card-thumb-placeholder { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: #1a1a1a; color: #333; font-size: 32px; }
