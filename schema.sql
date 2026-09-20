@@ -40,6 +40,10 @@ CREATE TABLE videos (
   like_count     INTEGER NOT NULL DEFAULT 0,
   dislike_count  INTEGER NOT NULL DEFAULT 0,
   comment_count  INTEGER NOT NULL DEFAULT 0,
+  -- Short free-form label shown on the card, e.g. "Freestyle / Venice
+  -- Beach" or "Convos / Monologues" -- lets visitors browse by act
+  -- style/location instead of just the title.
+  tag            TEXT NOT NULL DEFAULT '',
   created_at     INTEGER NOT NULL
 );
 

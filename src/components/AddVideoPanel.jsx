@@ -7,6 +7,7 @@ export default function AddVideoPanel({ onAdded }) {
   const [desc, setDesc]         = useState('');
   const [vid, setVid]           = useState('');
   const [duration, setDuration] = useState('');
+  const [tag, setTag]           = useState('');
   const [busy, setBusy]         = useState(false);
   const [error, setError]       = useState(null);
 
@@ -16,10 +17,11 @@ export default function AddVideoPanel({ onAdded }) {
       const video = await api('/api/videos', { method:'POST', body: JSON.stringify({
         title, description: desc, bunny_video_id: vid.trim(),
         thumbnail_url: bunnyThumb(vid.trim()),
-        duration_seconds: parseDuration(duration)
+        duration_seconds: parseDuration(duration),
+        tag: tag.trim()
       })});
       onAdded(video);
-      setTitle(''); setDesc(''); setVid(''); setDuration('');
+      setTitle(''); setDesc(''); setVid(''); setDuration(''); setTag('');
     } catch(e) { setError(e.message); }
     finally { setBusy(false); }
   }
@@ -32,6 +34,7 @@ export default function AddVideoPanel({ onAdded }) {
         <input type="text" placeholder="Description (optional)" value={desc} onChange={e=>setDesc(e.target.value)} />
         <input type="text" placeholder="Bunny Video ID (e.g. abc123-...)" value={vid} onChange={e=>setVid(e.target.value)} required />
         <input type="text" placeholder="Duration (mm:ss, e.g. 3:45)" value={duration} onChange={e=>setDuration(e.target.value)} />
+        <input type="text" placeholder="Tag (optional, e.g. Convos / Monologues)" value={tag} onChange={e=>setTag(e.target.value)} maxLength={60} />
         <button type="submit" disabled={busy} className="btn-primary">{busy?'Adding…':'Add video'}</button>
         {error && <p className="form-error">{error}</p>}
       </form>
