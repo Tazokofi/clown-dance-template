@@ -487,7 +487,7 @@ function VideoModal({ video: initialVideo, videos, onNavigate, onVideoUpdated, o
               </button>
             </div>
             <a className="tip-btn" href={SITE.tipUrl} target="_blank" rel="noopener noreferrer">
-              🤡 Tip the Clown
+              <TipJarIcon /> Tip Jar
             </a>
             <button className="video-share-btn" onClick={handleShare} type="button">
               {copied ? '✓ Copied!' : '↗ Share'}
@@ -601,6 +601,16 @@ function FAQSection() {
 }
 
 // ── Social platform icons (inline SVG, no external requests) ──
+function TipJarIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" style={{flexShrink:0}}>
+      <rect x="9" y="3.5" width="6" height="3" rx="1" stroke="currentColor" strokeWidth="1.6"/>
+      <rect x="6" y="7.5" width="12" height="13" rx="2.5" stroke="currentColor" strokeWidth="1.6"/>
+      <text x="12" y="17.5" textAnchor="middle" fontSize="8" fontWeight="800" fill="currentColor" fontFamily="Arial, sans-serif">$</text>
+    </svg>
+  );
+}
+
 function SocialIcon({ platform }) {
   switch (platform) {
     case 'youtube':
@@ -838,7 +848,7 @@ export default function ClownDanceGallery() {
         .vote-divider { width: 1px; background: #2a2a2a; flex-shrink: 0; }
         .video-share-btn { background: #1e1e1e; border: 1px solid #2a2a2a; color: #f5f5f5; font-size: 13px; padding: 7px 16px; border-radius: 20px; cursor: pointer; font-family: inherit; transition: background 0.15s; }
         .video-share-btn:hover { background: #2a2a2a; }
-        .tip-btn { background: var(--accent); border: 1px solid var(--accent); color: #fff; font-size: 13px; font-weight: 600; padding: 7px 16px; border-radius: 20px; cursor: pointer; font-family: inherit; text-decoration: none; display: inline-flex; align-items: center; transition: background 0.15s, border-color 0.15s; }
+        .tip-btn { background: var(--accent); border: 1px solid var(--accent); color: #fff; font-size: 13px; font-weight: 600; padding: 7px 16px; border-radius: 20px; cursor: pointer; font-family: inherit; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; transition: background 0.15s, border-color 0.15s; }
         .tip-btn:hover { background: var(--accent-hover); border-color: var(--accent-hover); }
         .hp-field { position: absolute; left: -9999px; width: 1px; height: 1px; opacity: 0; overflow: hidden; }
         .tip-btn-nav { padding: 5px 14px; font-size: 12px; }
@@ -964,7 +974,7 @@ export default function ClownDanceGallery() {
         </nav>
         <div className="top-bar-right">
           <a className="tip-btn tip-btn-nav" href={SITE.tipUrl} target="_blank" rel="noopener noreferrer">
-            🤡 Tip the Clown
+            <TipJarIcon /> Tip Jar
           </a>
           {user ? (
             <>
