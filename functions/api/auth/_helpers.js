@@ -58,3 +58,26 @@ export function json(data, status = 200, headers = {}) {
 export function err(message, status = 400) {
   return new Response(message, { status });
 }
+
+// ── Simple DB-backed rate limiting for auth endpoints ──────────────
+// Counts rows in auth_attempts for a given (kind, identifier) within a
+// sliding window. Callers decide what counts as an "attempt" to record
+// (e.g. only failed logins, but every signup POST).
+const RATE_LIMIT_WINDOWS_MS = { login: 15 * 60 * 1000, signup: 60 * 60 * 1000 };
+const RATE_LIMIT_MAX_ATTEMPTS = { login: 5, signup: 5 };
+
+export async function isRateLimited(DB, kind, identifier) {
+  const windowMs = RATE_LIMIT_WINDOWS_MS[kind];
+  const max = RATE_LIMIT_MAX_ATTEMPTS[kind];
+  const since = Date.now() - windowMs;
+  const row = await DB.prepare(
+    'SELECT COUNT(*) as n FROM auth_attempts WHERE kind = ? AND identifier = ? AND created_at > ?'
+  ).bind(kind, identifier, since).first();
+  return (row?.n || 0) >= max;
+}
+
+export async function recordAttempt(DB, kind, identifier) {
+  await DB.prepare(
+    'INSERT INTO auth_attempts (kind, identifier, created_at) VALUES (?, ?, ?)'
+  ).bind(kind, identifier, Date.now()).run();
+}

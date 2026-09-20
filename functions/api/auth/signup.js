@@ -1,6 +1,12 @@
-import { hashPassword, newSalt, randomToken, sessionCookie, json, err } from './_helpers.js';
+import { hashPassword, newSalt, randomToken, sessionCookie, json, err, isRateLimited, recordAttempt } from './_helpers.js';
 
 export async function onRequestPost({ env, request }) {
+  const ip = request.headers.get('CF-Connecting-IP') || 'unknown';
+  if (await isRateLimited(env.DB, 'signup', ip)) {
+    return err('Too many accounts created from this network — please try again later', 429);
+  }
+  await recordAttempt(env.DB, 'signup', ip);
+
   const { name, email, password } = await request.json();
   if (!name || !email || !password || password.length < 8)
     return err('Name, email and password (8+ chars) required');

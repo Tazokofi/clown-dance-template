@@ -18,6 +18,16 @@ CREATE TABLE sessions (
 );
 CREATE INDEX idx_sessions_user_id ON sessions(user_id);
 
+-- Rate limiting for login/signup endpoints. `kind` is 'login' or 'signup';
+-- `identifier` is the email (login) or IP address (signup).
+CREATE TABLE auth_attempts (
+  id         INTEGER PRIMARY KEY AUTOINCREMENT,
+  kind       TEXT NOT NULL,
+  identifier TEXT NOT NULL,
+  created_at INTEGER NOT NULL
+);
+CREATE INDEX idx_auth_attempts_lookup ON auth_attempts(kind, identifier, created_at);
+
 -- ── Videos ───────────────────────────────────────────────
 CREATE TABLE videos (
   id             INTEGER PRIMARY KEY AUTOINCREMENT,

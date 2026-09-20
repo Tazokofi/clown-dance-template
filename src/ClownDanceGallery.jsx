@@ -451,7 +451,7 @@ function VideoModal({ video: initialVideo, videos, onNavigate, onVideoUpdated, o
         <button className="modal-close" onClick={onClose}>×</button>
 
         <div className="video-container">
-          <iframe key={video.bunny_video_id} src={bunnyEmbed(video.bunny_video_id)} allowFullScreen allow="autoplay"
+          <iframe key={video.bunny_video_id} src={bunnyEmbed(video.bunny_video_id)} allowFullScreen allow="autoplay" loading="lazy"
             style={{position:'absolute',top:0,left:0,width:'100%',height:'100%',border:'none'}} />
         </div>
 
