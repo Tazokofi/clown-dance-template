@@ -53,5 +53,4 @@ export const SOCIAL_LINKS = [
 // and WhatsApp details (or add/remove entries).
 export const CHAT_CONTACTS = [
   { label: 'Signal', value: 'ApplePie.420', href: 'https://signal.me/#u/TGNS.420' },
-  { label: 'WhatsApp', value: '+1 (987) 239-4628', href: 'https://wa.me/19872394628' },
 ];
