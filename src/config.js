@@ -33,7 +33,7 @@ export const INITIAL_VIDEOS_SHOWN = 12;
 export const FAQS = [
   { q: 'How often do you post new videos?', a: 'New videos go up regularly — check back often, or follow one of the links below to get notified as soon as something new is posted.' },
   { q: 'Can I use your videos or clips?', a: 'Reach out through the contact form below before reusing any footage.' },
-  { q: 'Where else can I find your content?', a: 'This site mirrors what’s posted across YouTube, TikTok, X, Rumble, and Telegram — links are in the Contact section below.' },
+  { q: 'Where else can I find your content?', a: 'This site mirrors what’s posted across YouTube, TikTok, X, Rumble, and Odysee — links are in the Contact section below.' },
   { q: 'How do I leave a comment?', a: 'Create a free account (top right, or under any video) and you can comment, like, and reply throughout the site.' },
 ];
 
@@ -46,7 +46,7 @@ export const SOCIAL_LINKS = [
   { label: 'TikTok', platform: 'tiktok', href: '#' },
   { label: 'X / Twitter', platform: 'x', href: '#' },
   { label: 'Rumble', platform: 'rumble', href: '#' },
-  { label: 'Telegram', platform: 'telegram', href: '#' },
+  { label: 'Odysee', platform: 'odysee', href: '#' },
 ];
 
 // Placeholder direct-chat contact info — replace with your real Signal

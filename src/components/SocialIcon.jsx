@@ -19,11 +19,9 @@ export default function SocialIcon({ platform }) {
           <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
         </svg>
       );
-    case 'telegram':
+    case 'odysee':
       return (
-        <svg viewBox="0 0 24 24" width="19" height="19" fill="currentColor" aria-hidden="true">
-          <path d="M21.94 4.36c.28-1.17-.94-2.1-2.03-1.66L2.4 9.74c-1.2.47-1.19 2.16.02 2.62l4.29 1.61 1.66 5.31c.2.65 1.03.85 1.51.36l2.4-2.47 4.4 3.24c.83.61 2.02.17 2.25-.83l3-13.2zM8.36 13.16l9.4-6.3c.24-.16.5.15.29.34l-7.7 6.95c-.3.27-.49.63-.55 1.03l-.25 1.75-1.19-3.77z" />
-        </svg>
+        <img src="/icons/odysee.png" alt="" width="22" height="22" style={{borderRadius:'50%',display:'block'}} />
       );
     case 'rumble':
     default:
