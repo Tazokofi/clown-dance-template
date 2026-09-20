@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useParams, useNavigate } from "react-router-dom";
 import { SITE, INITIAL_VIDEOS_SHOWN } from "./config.js";
 import { api, hexToRgb, formatDate, formatCount, formatDuration } from "./utils.js";
 import { useVideos } from "./hooks/useVideos.js";
@@ -13,7 +14,9 @@ import VideoModal from "./components/VideoModal.jsx";
 
 // ── Main Gallery ───────────────────────────────────────
 export default function ClownDanceGallery() {
-  const { videos, setVideos, loading, initialSelected } = useVideos();
+  const { videos, setVideos, loading } = useVideos();
+  const { id: routeVideoId } = useParams();
+  const navigate = useNavigate();
   const [selected, setSelected] = useState(null);
   const [user, setUser]         = useState(null);
   const [showAuth, setShowAuth] = useState(false);
@@ -27,19 +30,21 @@ export default function ClownDanceGallery() {
     api('/api/auth/me').then(setUser).catch(()=>setUser(null));
   }, []);
 
-  // Deep link: open the video from ?v=ID once useVideos resolves it
+  // The /video/:id route is the single source of truth for which video
+  // (if any) is open — this keeps `selected` in sync with it, including
+  // on browser back/forward, which React Router already handles for us.
   useEffect(() => {
-    if (initialSelected) setSelected(initialSelected);
-  }, [initialSelected]);
+    if (!routeVideoId) { setSelected(null); return; }
+    const match = videos.find(v => v.id === parseInt(routeVideoId, 10));
+    setSelected(match || null);
+  }, [routeVideoId, videos]);
 
   function openVideo(video) {
-    setSelected(video);
-    window.history.pushState({}, '', `?v=${video.id}`);
+    navigate(`/video/${video.id}`);
   }
 
   function closeVideo() {
-    setSelected(null);
-    window.history.pushState({}, '', window.location.pathname);
+    navigate('/');
   }
 
   function handleVideoUpdated(updated) {
@@ -48,20 +53,6 @@ export default function ClownDanceGallery() {
 
   const visibleVideos = showAllVideos ? videos : videos.slice(0, INITIAL_VIDEOS_SHOWN);
 
-  // Handle browser back/forward buttons
-  useEffect(() => {
-    function onPop() {
-      const params = new URLSearchParams(window.location.search);
-      const videoId = params.get('v');
-      if (videoId) {
-        const match = videos.find(v => v.id === parseInt(videoId));
-        if (match) { setSelected(match); return; }
-      }
-      setSelected(null);
-    }
-    window.addEventListener('popstate', onPop);
-    return () => window.removeEventListener('popstate', onPop);
-  }, [videos]);
 
   async function handleSignOut() {
     try { await fetch('/api/auth/logout', { method:'POST', credentials:'include' }); }

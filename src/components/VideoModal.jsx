@@ -43,7 +43,7 @@ export default function VideoModal({ video: initialVideo, videos, onNavigate, on
   }
 
   function handleShare() {
-    const url = `${window.location.origin}?v=${video.id}`;
+    const url = `${window.location.origin}/video/${video.id}`;
     navigator.clipboard.writeText(url).then(() => {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
