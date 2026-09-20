@@ -191,7 +191,7 @@ function Comment({ c, user, onReply, onVote, onReport, onDelete, onUnhide, depth
         <div style={{flex:1,minWidth:0}}>
           <div style={{display:'flex',alignItems:'center',gap:8,flexWrap:'wrap',marginBottom:4}}>
             <span style={{fontWeight:600,fontSize:12,color:'#f5f5f5'}}>{c.author}</span>
-            {c.is_admin ? <span className="admin-badge">CLOWN</span> : null}
+            {c.is_admin ? <span className="admin-badge">ADMIN</span> : null}
             <span style={{fontSize:11,color:'#555'}}>{formatDate(c.created_at)}</span>
           </div>
           <p style={{margin:0,fontSize:13,color:'#d0d0d0',wordBreak:'break-word',lineHeight:1.5}}>{c.text}</p>
