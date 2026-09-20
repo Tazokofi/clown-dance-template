@@ -21,7 +21,7 @@ export default function SocialIcon({ platform }) {
       );
     case 'odysee':
       return (
-        <img src="/icons/odysee.png" alt="" width="22" height="22" style={{borderRadius:'50%',display:'block'}} />
+        <img src="/icons/odysee.png" alt="" width="20" height="20" style={{display:'block'}} />
       );
     case 'rumble':
     default:
