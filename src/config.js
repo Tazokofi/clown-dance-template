@@ -9,7 +9,6 @@ export const SITE = {
   nameSuffix: 'Gallery',
   heading: 'This is me, dressed as a clown while dancing.',
   headingLine2: 'Please watch videos, like, and comment.',
-  dateRange: 'May – July 2026',
   // Brand accent color, used throughout the site for buttons, links,
   // active states, and the "Dance" word in the logo. accentColorHover
   // is what buttons fade to on hover/press — usually the same color,

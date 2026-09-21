@@ -260,7 +260,6 @@ export default function ClownDanceGallery() {
 
       <header className="header">
         <h1>{SITE.heading}<br/>{SITE.headingLine2}</h1>
-        <p>{SITE.dateRange}</p>
       </header>
 
       <section className="site-section videos-section" id="videos">
