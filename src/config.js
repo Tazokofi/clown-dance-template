@@ -8,7 +8,6 @@ export const SITE = {
   nameAccent: 'Dance',
   nameSuffix: 'Gallery',
   heading: 'This is me, dressed as a clown while dancing.',
-  headingLine2: 'Please watch videos, like, and comment.',
   // Brand accent color, used throughout the site for buttons, links,
   // active states, and the "Dance" word in the logo. accentColorHover
   // is what buttons fade to on hover/press — usually the same color,

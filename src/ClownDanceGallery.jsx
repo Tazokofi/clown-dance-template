@@ -259,7 +259,7 @@ export default function ClownDanceGallery() {
       </div>
 
       <header className="header">
-        <h1>{SITE.heading}<br/>{SITE.headingLine2}</h1>
+        <h1>{SITE.heading}</h1>
       </header>
 
       <section className="site-section videos-section" id="videos">
