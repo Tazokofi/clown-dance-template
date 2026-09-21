@@ -191,7 +191,6 @@ export default function ClownDanceGallery() {
         .social-badge:hover { border-color: var(--accent); color: var(--accent); }
         .social-badge svg { display: block; }
         .social-badge-text { font-family: 'Fraunces', serif; font-size: 17px; font-weight: 900; font-style: italic; line-height: 1; }
-        .site-section-eyebrow { display: block; font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--accent); font-weight: 700; margin-bottom: 10px; }
         .videos-section { margin-top: 8px; }
         .section-divider { max-width: 1180px; margin: 56px auto 0; height: 1px; background: linear-gradient(90deg, transparent, #262626 15%, #262626 85%, transparent); }
 
@@ -226,7 +225,6 @@ export default function ClownDanceGallery() {
           .add-video-panel { margin: 20px 0 0; padding: 16px; }
           .site-section { margin-top: 40px; }
           .site-section-title { font-size: 20px; }
-          .site-section-eyebrow { font-size: 10px; }
           .section-divider { margin-top: 32px; }
           .videos-section { margin-top: 0; }
         }
@@ -266,7 +264,6 @@ export default function ClownDanceGallery() {
       </header>
 
       <section className="site-section videos-section" id="videos">
-        <span className="site-section-eyebrow">Watch</span>
         <h2 className="site-section-title">Videos</h2>
 
         {loading && <div className="empty-state"><p>Loading videos…</p></div>}
@@ -341,7 +338,6 @@ export default function ClownDanceGallery() {
       <div className="section-divider" />
 
       <section className="site-section" id="community">
-        <span className="site-section-eyebrow">Community</span>
         <h2 className="site-section-title">Join the Conversation</h2>
         <div className="comments" style={{padding:0}}>
           <Comments kind="site" user={user} onAuthed={setUser} onSignOut={handleSignOut} onUpdateUser={setUser} />

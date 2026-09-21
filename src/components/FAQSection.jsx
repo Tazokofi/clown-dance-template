@@ -6,7 +6,6 @@ export default function FAQSection() {
   const [openIndex, setOpenIndex] = useState(null);
   return (
     <section className="site-section" id="faq">
-      <span className="site-section-eyebrow">FAQ</span>
       <h2 className="site-section-title">FAQs</h2>
       <div className="faq-list">
         {FAQS.map((item, i) => (

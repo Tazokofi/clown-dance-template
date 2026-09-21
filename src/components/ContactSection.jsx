@@ -27,7 +27,6 @@ export default function ContactSection() {
 
   return (
     <section className="site-section" id="contact">
-      <span className="site-section-eyebrow">Get In Touch</span>
       <h2 className="site-section-title">Contact Me</h2>
       <div className="faq-list">
         <div className="faq-item">
