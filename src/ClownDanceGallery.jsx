@@ -21,6 +21,7 @@ export default function ClownDanceGallery() {
   const [user, setUser]         = useState(null);
   const [showAuth, setShowAuth] = useState(false);
   const [showAllVideos, setShowAllVideos] = useState(false);
+  const [activeTag, setActiveTag] = useState('all');
 
   useEffect(() => {
     document.title = `${SITE.nameMain} ${SITE.nameAccent} ${SITE.nameSuffix}`;
@@ -51,7 +52,15 @@ export default function ClownDanceGallery() {
     setVideos(prev => prev.map(v => v.id === updated.id ? { ...v, ...updated } : v));
   }
 
-  const visibleVideos = showAllVideos ? videos : videos.slice(0, INITIAL_VIDEOS_SHOWN);
+  // Distinct tags currently in use, alphabetical, for the filter bar.
+  const tags = [...new Set(videos.map(v => v.tag).filter(Boolean))].sort((a, b) => a.localeCompare(b));
+  const tagFilteredVideos = activeTag === 'all' ? videos : videos.filter(v => v.tag === activeTag);
+  const visibleVideos = showAllVideos ? tagFilteredVideos : tagFilteredVideos.slice(0, INITIAL_VIDEOS_SHOWN);
+
+  function selectTag(tag) {
+    setActiveTag(tag);
+    setShowAllVideos(false);
+  }
 
 
   async function handleSignOut() {
@@ -76,6 +85,10 @@ export default function ClownDanceGallery() {
         .header { max-width: 1180px; margin: 0 auto 40px; }
         .header h1 { font-family: 'Fraunces', serif; font-weight: 700; font-size: clamp(26px,4vw,42px); line-height: 1.15; margin-bottom: 8px; }
         .header p { color: #8a8a8a; font-size: 15px; }
+        .tag-filter-bar { max-width: 1180px; margin: 0 auto 20px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+        .tag-filter-btn { background: transparent; border: 1px solid #2a2a2a; color: #8a8a8a; font-size: 12px; font-weight: 600; padding: 6px 14px; border-radius: 14px; cursor: pointer; font-family: inherit; transition: all 0.15s; white-space: nowrap; }
+        .tag-filter-btn:hover { border-color: #555; color: #f5f5f5; }
+        .tag-filter-btn.active { border-color: var(--accent); color: #f5f5f5; background: rgba(var(--accent-rgb),0.1); }
         .grid { max-width: 1180px; margin: 0 auto; display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px; }
         .card { background: #141414; border: 1px solid #1e1e1e; border-radius: 6px; overflow: hidden; cursor: pointer; text-align: left; padding: 0; color: inherit; font: inherit; transition: transform 0.18s, border-color 0.18s; }
         .card:hover { transform: translateY(-2px); border-color: var(--accent); }
@@ -264,6 +277,25 @@ export default function ClownDanceGallery() {
         </div>
       )}
 
+      {!loading && tags.length > 0 && (
+        <div className="tag-filter-bar">
+          <button className={`tag-filter-btn ${activeTag==='all'?'active':''}`} onClick={()=>selectTag('all')} type="button">
+            All
+          </button>
+          {tags.map(t => (
+            <button key={t} className={`tag-filter-btn ${activeTag===t?'active':''}`} onClick={()=>selectTag(t)} type="button">
+              {t}
+            </button>
+          ))}
+        </div>
+      )}
+
+      {!loading && videos.length > 0 && tagFilteredVideos.length === 0 && (
+        <div className="empty-state">
+          <p>No videos tagged "{activeTag}" yet.</p>
+        </div>
+      )}
+
       <div className="grid">
         {visibleVideos.map(v => (
           <button key={v.id} className="card" onClick={()=>openVideo(v)}>
@@ -289,10 +321,10 @@ export default function ClownDanceGallery() {
         ))}
       </div>
 
-      {!showAllVideos && videos.length > INITIAL_VIDEOS_SHOWN && (
+      {!showAllVideos && tagFilteredVideos.length > INITIAL_VIDEOS_SHOWN && (
         <div style={{textAlign:'center', maxWidth:1180, margin:'20px auto 0'}}>
           <button className="btn-ghost" onClick={()=>setShowAllVideos(true)} type="button">
-            View more videos ({videos.length - INITIAL_VIDEOS_SHOWN} more)
+            View more videos ({tagFilteredVideos.length - INITIAL_VIDEOS_SHOWN} more)
           </button>
         </div>
       )}
