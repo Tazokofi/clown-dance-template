@@ -192,6 +192,9 @@ export default function ClownDanceGallery() {
         .social-badge svg { display: block; }
         .social-badge-text { font-family: 'Fraunces', serif; font-size: 17px; font-weight: 900; font-style: italic; line-height: 1; }
         .videos-section { margin-top: 8px; }
+        .season-two-banner { max-width: 1180px; margin: 28px auto 0; display: flex; align-items: center; gap: 12px; padding: 16px 20px; background: #141414; border: 1px dashed #2a2a2a; border-radius: 8px; }
+        .season-two-banner h3 { font-family: 'Fraunces', serif; font-size: 17px; font-weight: 700; margin: 0; color: #f5f5f5; }
+        .coming-soon-badge { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: var(--accent); background: rgba(var(--accent-rgb),0.1); border: 1px solid rgba(var(--accent-rgb),0.3); border-radius: 12px; padding: 3px 10px; }
         .section-divider { max-width: 1180px; margin: 56px auto 0; height: 1px; background: linear-gradient(90deg, transparent, #262626 15%, #262626 85%, transparent); }
 
         /* ── MOBILE RESPONSIVE ── */
@@ -263,7 +266,7 @@ export default function ClownDanceGallery() {
       </header>
 
       <section className="site-section videos-section" id="videos">
-        <h2 className="site-section-title">Videos</h2>
+        <h2 className="site-section-title">Season 1</h2>
 
         {loading && <div className="empty-state"><p>Loading videos…</p></div>}
 
@@ -324,6 +327,11 @@ export default function ClownDanceGallery() {
           </button>
         </div>
       )}
+
+      <div className="season-two-banner">
+        <h3>Season 2</h3>
+        <span className="coming-soon-badge">Coming soon</span>
+      </div>
 
       {user?.is_admin && (
         <AddVideoPanel onAdded={v => setVideos(prev=>[v,...prev])} />
