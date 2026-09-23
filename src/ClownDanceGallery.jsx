@@ -24,6 +24,7 @@ export default function ClownDanceGallery() {
   const [showAllVideos, setShowAllVideos] = useState(false);
   const [activeTag, setActiveTag] = useState('all');
   const [season2Open, setSeason2Open] = useState(false);
+  const [tourPitchSignal, setTourPitchSignal] = useState(0);
 
   useEffect(() => {
     document.title = `${SITE.nameMain} ${SITE.nameAccent} ${SITE.nameSuffix}`;
@@ -206,14 +207,19 @@ export default function ClownDanceGallery() {
         .footer-link { color: #555; text-decoration: underline; }
         .footer-link:hover { color: var(--accent); }
         .season-two-section { max-width: 1180px; margin: 40px auto 0; }
-        .coming-soon-badge { display: inline-block; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: var(--accent); background: rgba(var(--accent-rgb),0.1); border: 1px solid rgba(var(--accent-rgb),0.3); border-radius: 12px; padding: 3px 10px; white-space: nowrap; margin-left: 10px; vertical-align: middle; }
+        .season-see { color: var(--accent); }
+        .season-two-item { border-color: var(--accent); box-shadow: 0 4px 24px rgba(var(--accent-rgb),0.08); }
+        .coming-soon-badge { display: inline-block; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: var(--accent); background: rgba(var(--accent-rgb),0.15); border: 1px solid var(--accent); border-radius: 12px; padding: 3px 10px; white-space: nowrap; }
         .season-two-answer { text-align: left; }
-        .season-two-body { color: #c8c8c8; font-size: 14px; line-height: 1.7; margin: 0 0 12px; }
-        .season-two-asks { margin: 0 0 16px; padding-left: 20px; color: #c8c8c8; font-size: 14px; line-height: 1.8; }
-        .season-two-asks li + li { margin-top: 4px; }
-        .season-two-asks strong { color: #f5f5f5; }
-        .season-two-cta { display: inline-flex; align-items: center; gap: 6px; background: var(--accent); color: #fff; font-size: 13px; font-weight: 600; padding: 9px 18px; border-radius: 20px; text-decoration: none; transition: background 0.15s; }
-        .season-two-cta:hover { background: var(--accent-hover); }
+        .season-two-eyebrow-row { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 12px; }
+        .season-two-eyebrow { font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--accent); font-weight: 700; }
+        .season-two-title { font-family: 'Fraunces', serif; font-size: clamp(20px,4vw,26px); font-weight: 700; color: #fff; margin: 0 0 10px; }
+        .season-two-body { color: #b0b0b0; font-size: 14px; line-height: 1.7; margin: 0 0 20px; }
+        .season-two-reqs { list-style: none; display: flex; flex-direction: column; gap: 12px; margin: 0 0 24px; padding: 0; }
+        .season-two-reqs li { background: #1a1a1a; border: 1px solid #262626; padding: 14px 16px; border-radius: 6px; font-size: 13px; color: #d0d0d0; line-height: 1.5; }
+        .season-two-reqs strong { color: #fff; display: block; margin-bottom: 3px; font-size: 14px; }
+        .season-two-cta { display: inline-flex; align-items: center; gap: 8px; background: var(--accent); color: #fff; font-size: 13px; font-weight: 600; padding: 10px 20px; border: none; border-radius: 6px; cursor: pointer; font-family: inherit; transition: background 0.15s, transform 0.1s; }
+        .season-two-cta:hover { background: var(--accent-hover); transform: translateY(-1px); }
         .section-divider { max-width: 1180px; margin: 56px auto 0; height: 1px; background: linear-gradient(90deg, transparent, #262626 15%, #262626 85%, transparent); }
 
         /* ── MOBILE RESPONSIVE ── */
@@ -248,7 +254,6 @@ export default function ClownDanceGallery() {
           .site-section { margin-top: 40px; }
           .site-section-title { font-size: 20px; }
           .season-subtitle { display: block; margin-left: 0; margin-top: 4px; font-size: 12px; }
-          .coming-soon-badge { display: block; width: fit-content; margin-left: 0; margin-top: 8px; }
           .section-divider { margin-top: 32px; }
           .videos-section { margin-top: 0; }
         }
@@ -287,7 +292,7 @@ export default function ClownDanceGallery() {
       </header>
 
       <section className="site-section videos-section" id="videos">
-        <h2 className="site-section-title">Season 1: The Boston Tea Party <span className="season-subtitle">(filmed May–July 2026)</span></h2>
+        <h2 className="site-section-title">Season 1: The Boston <span className="season-see">See</span> Party <span className="season-subtitle">(filmed May–July 2026)</span></h2>
 
         {loading && <div className="empty-state"><p>Loading videos…</p></div>}
 
@@ -351,28 +356,29 @@ export default function ClownDanceGallery() {
 
       <div className="season-two-section">
         <h2 className="site-section-title">
-          Season 2: E Pluribus Unum <span className="season-subtitle">(East Coast tour)</span>
-          <span className="coming-soon-badge">Looking for hosts</span>
+          Season 2: <span className="season-see">See</span> Pluribus Unum <span className="season-subtitle">(East Coast tour)</span>
         </h2>
         <div className="faq-list">
-          <div className="faq-item">
+          <div className="faq-item season-two-item">
             <button className="faq-question" onClick={()=>setSeason2Open(o=>!o)} type="button">
               <span>What I need to make a stop happen</span>
               <span className="faq-caret">{season2Open?'−':'+'}</span>
             </button>
             {season2Open && (
               <div className="faq-answer season-two-answer">
+                <div className="season-two-eyebrow-row">
+                  <span className="season-two-eyebrow">Tour Announcement</span>
+                  <span className="coming-soon-badge">Season 2 Callout</span>
+                </div>
+                <h3 className="season-two-title">Bring the East Coast Tour to Your City</h3>
                 <p className="season-two-body">
-                  Season 2 is going on the road — one city per week, up and down the East Coast. To make a stop happen, I need two things from someone local:
+                  Season 1 in Boston is wrapped! For Season 2, I'm taking the street performances on the road — spending one full week in cities up and down the East Coast. To bring the tour to your town, I need two things:
                 </p>
-                <ul className="season-two-asks">
-                  <li><strong>An invite + a spot.</strong> Point me to a high-traffic area in your city to perform — a boardwalk, a downtown strip, a busy park, wherever people are.</li>
-                  <li><strong>A couch for the week.</strong> Somewhere to crash for 7 nights while I'm filming there.</li>
+                <ul className="season-two-reqs">
+                  <li><strong>📍 1. A Scouted Street Spot</strong>A local insider who knows the city and can scout a high-traffic pedestrian plaza, boardwalk, or street corner where a dancing clown can legally draw a crowd.</li>
+                  <li><strong>🛋️ 2. A Crash Pad</strong>A safe couch, futon, or spare room to sleep on for 7 nights.</li>
                 </ul>
-                <p className="season-two-body">
-                  If that's you, use the contact form below — tell me your city, the spot you have in mind, and that you've got the couch covered. I'll feature your city (and you, if you're up for it) in the videos.
-                </p>
-                <a href="#contact" className="season-two-cta">Pitch your city →</a>
+                <button type="button" className="season-two-cta" onClick={()=>setTourPitchSignal(s=>s+1)}>🤡 Pitch Your City &amp; Host Me</button>
               </div>
             )}
           </div>
@@ -399,7 +405,7 @@ export default function ClownDanceGallery() {
 
       <div className="section-divider" />
 
-      <ContactSection />
+      <ContactSection tourPitchSignal={tourPitchSignal} />
 
       <div className="section-divider" />
 
