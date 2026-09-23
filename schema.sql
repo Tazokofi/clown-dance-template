@@ -44,6 +44,9 @@ CREATE TABLE videos (
   -- Beach" or "Convos / Monologues" -- lets visitors browse by act
   -- style/location instead of just the title.
   tag            TEXT NOT NULL DEFAULT '',
+  -- 'landscape' (16:9, the default/main grid) or 'vertical' (9:16 --
+  -- shown in the dedicated Shorts row instead of the main grid).
+  orientation    TEXT NOT NULL DEFAULT 'landscape',
   created_at     INTEGER NOT NULL
 );
 
