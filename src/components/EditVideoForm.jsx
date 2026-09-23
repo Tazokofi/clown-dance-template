@@ -8,7 +8,6 @@ export default function EditVideoForm({ video, onSaved, onCancel }) {
   const [vid, setVid]           = useState(video.bunny_video_id);
   const [duration, setDuration] = useState(formatDuration(video.duration_seconds) || '');
   const [tag, setTag]           = useState(video.tag || '');
-  const [orientation, setOrientation] = useState(video.orientation === 'vertical' ? 'vertical' : 'landscape');
   const [busy, setBusy]         = useState(false);
   const [error, setError]       = useState(null);
 
@@ -19,8 +18,7 @@ export default function EditVideoForm({ video, onSaved, onCancel }) {
         title, description: desc, bunny_video_id: vid.trim(),
         thumbnail_url: bunnyThumb(vid.trim()),
         duration_seconds: parseDuration(duration),
-        tag: tag.trim(),
-        orientation
+        tag: tag.trim()
       })});
       onSaved(updated);
     } catch(e) { setError(e.message); }
@@ -34,10 +32,6 @@ export default function EditVideoForm({ video, onSaved, onCancel }) {
       <input type="text" placeholder="Bunny Video ID" value={vid} onChange={e=>setVid(e.target.value)} required style={{marginTop:8}} />
       <input type="text" placeholder="Duration (mm:ss)" value={duration} onChange={e=>setDuration(e.target.value)} style={{marginTop:8}} />
       <input type="text" placeholder="Tag (optional, e.g. Convos / Monologues)" value={tag} onChange={e=>setTag(e.target.value)} maxLength={60} style={{marginTop:8}} />
-      <select value={orientation} onChange={e=>setOrientation(e.target.value)} style={{marginTop:8}}>
-        <option value="landscape">Landscape (16:9) — main grid</option>
-        <option value="vertical">Vertical (9:16) — Shorts row</option>
-      </select>
       <div style={{display:'flex',gap:8,marginTop:10}}>
         <button type="submit" disabled={busy} className="btn-primary">{busy?'Saving…':'Save'}</button>
         <button type="button" className="btn-ghost" onClick={onCancel}>Cancel</button>

@@ -52,15 +52,9 @@ export default function ClownDanceGallery() {
     setVideos(prev => prev.map(v => v.id === updated.id ? { ...v, ...updated } : v));
   }
 
-  // Vertical (9:16) cuts get their own dedicated row below the main grid
-  // instead of being squeezed into 16:9 cards, so keep them out of the
-  // main grid/tag-filter machinery entirely.
-  const landscapeVideos = videos.filter(v => v.orientation !== 'vertical');
-  const shortsVideos = videos.filter(v => v.orientation === 'vertical');
-
   // Distinct tags currently in use, alphabetical, for the filter bar.
-  const tags = [...new Set(landscapeVideos.map(v => v.tag).filter(Boolean))].sort((a, b) => a.localeCompare(b));
-  const tagFilteredVideos = activeTag === 'all' ? landscapeVideos : landscapeVideos.filter(v => v.tag === activeTag);
+  const tags = [...new Set(videos.map(v => v.tag).filter(Boolean))].sort((a, b) => a.localeCompare(b));
+  const tagFilteredVideos = activeTag === 'all' ? videos : videos.filter(v => v.tag === activeTag);
   const visibleVideos = showAllVideos ? tagFilteredVideos : tagFilteredVideos.slice(0, INITIAL_VIDEOS_SHOWN);
 
   function selectTag(tag) {
@@ -170,7 +164,7 @@ export default function ClownDanceGallery() {
         .muted { font-size: 12px; color: #555; }
         .report-modal { background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 6px; padding: 12px; margin-top: 8px; }
         .add-video-panel { max-width: 1180px; margin: 32px auto 0; background: #141414; border: 1px solid #1e1e1e; border-radius: 6px; padding: 20px; }
-        .add-video-panel input, .add-video-panel select { background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 4px; color: #f5f5f5; padding: 8px 10px; font-family: inherit; font-size: 13px; width: 100%; }
+        .add-video-panel input { background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 4px; color: #f5f5f5; padding: 8px 10px; font-family: inherit; font-size: 13px; width: 100%; }
         .empty-state { max-width: 1180px; margin: 60px auto; text-align: center; color: #555; }
 
         .site-section { max-width: 1180px; margin: 64px auto 0; }
@@ -203,13 +197,6 @@ export default function ClownDanceGallery() {
         .season-two-banner { max-width: 1180px; margin: 28px auto 0; display: flex; align-items: center; gap: 12px; padding: 16px 20px; background: #141414; border: 1px dashed #2a2a2a; border-radius: 8px; }
         .season-two-banner h3 { font-family: 'Fraunces', serif; font-size: 17px; font-weight: 700; margin: 0; color: #f5f5f5; }
         .coming-soon-badge { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: var(--accent); background: rgba(var(--accent-rgb),0.1); border: 1px solid rgba(var(--accent-rgb),0.3); border-radius: 12px; padding: 3px 10px; }
-        .shorts-section { max-width: 1180px; margin: 32px auto 0; }
-        .shorts-heading { display: flex; align-items: baseline; gap: 8px; margin-bottom: 14px; }
-        .shorts-heading h3 { font-family: 'Fraunces', serif; font-size: 19px; font-weight: 700; margin: 0; color: #f5f5f5; }
-        .shorts-row { display: flex; gap: 14px; overflow-x: auto; padding-bottom: 10px; scroll-snap-type: x proximity; -webkit-overflow-scrolling: touch; }
-        .shorts-row .card { flex: 0 0 160px; scroll-snap-align: start; }
-        .shorts-row .card-thumb-wrap { aspect-ratio: 9/16; }
-        .shorts-row .card-body h3 { font-size: 12px; -webkit-line-clamp: 2; display: -webkit-box; -webkit-box-orient: vertical; overflow: hidden; }
         .section-divider { max-width: 1180px; margin: 56px auto 0; height: 1px; background: linear-gradient(90deg, transparent, #262626 15%, #262626 85%, transparent); }
 
         /* ── MOBILE RESPONSIVE ── */
@@ -224,7 +211,6 @@ export default function ClownDanceGallery() {
           .header h1 { font-size: 22px; line-height: 1.2; }
           .header p { font-size: 13px; }
           .grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
-          .shorts-row .card { flex: 0 0 130px; }
           .card-body h3 { font-size: 12px; }
           .overlay { padding: 0; align-items: flex-end; }
           .modal { border-radius: 16px 16px 0 0; max-height: 96vh; overflow-y: auto; }
@@ -287,7 +273,7 @@ export default function ClownDanceGallery() {
 
         {loading && <div className="empty-state"><p>Loading videos…</p></div>}
 
-      {!loading && landscapeVideos.length === 0 && (
+      {!loading && videos.length === 0 && (
         <div className="empty-state">
           <p>No videos yet.{user?.is_admin ? ' Add one below.' : ''}</p>
         </div>
@@ -306,7 +292,7 @@ export default function ClownDanceGallery() {
         </div>
       )}
 
-      {!loading && landscapeVideos.length > 0 && tagFilteredVideos.length === 0 && (
+      {!loading && videos.length > 0 && tagFilteredVideos.length === 0 && (
         <div className="empty-state">
           <p>No videos tagged "{activeTag}" yet.</p>
         </div>
@@ -342,39 +328,6 @@ export default function ClownDanceGallery() {
           <button className="btn-ghost" onClick={()=>setShowAllVideos(true)} type="button">
             View more videos ({tagFilteredVideos.length - INITIAL_VIDEOS_SHOWN} more)
           </button>
-        </div>
-      )}
-
-      {shortsVideos.length > 0 && (
-        <div className="shorts-section">
-          <div className="shorts-heading">
-            <h3>📱 Shorts</h3>
-            <span className="muted" style={{fontSize:12}}>Vertical cuts</span>
-          </div>
-          <div className="shorts-row">
-            {shortsVideos.map(v => (
-              <button key={v.id} className="card" onClick={()=>openVideo(v)}>
-                <div className="card-thumb-wrap">
-                  {v.tag && <span className="card-tag">{v.tag}</span>}
-                  {v.thumbnail_url
-                    ? <img className="card-thumb" src={v.thumbnail_url} alt={v.title} loading="lazy" />
-                    : <div className="card-thumb-placeholder">▶</div>
-                  }
-                  <div className="card-stats-bar">
-                    <span className="card-stats-left">
-                      <span>👁 {formatCount(v.view_count)}</span>
-                      <span>💬 {formatCount(v.comment_count)}</span>
-                    </span>
-                    {formatDuration(v.duration_seconds) && <span className="card-duration">{formatDuration(v.duration_seconds)}</span>}
-                  </div>
-                </div>
-                <div className="card-body">
-                  <h3>{v.title}</h3>
-                  <span>{formatDate(v.created_at)}</span>
-                </div>
-              </button>
-            ))}
-          </div>
         </div>
       )}
 
