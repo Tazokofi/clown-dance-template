@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import { SOCIAL_LINKS, SITE } from "../config.js";
 import SocialIcon from "./SocialIcon.jsx";
 
@@ -14,7 +15,9 @@ export default function Footer() {
           </a>
         ))}
       </div>
-      <p className="footer-copyright">© {year} {SITE.nameMain} {SITE.nameAccent} {SITE.nameSuffix}</p>
+      <p className="footer-copyright">
+        © {year} {SITE.nameMain} {SITE.nameAccent} {SITE.nameSuffix} · <Link to="/privacy" className="footer-link">Privacy Policy</Link>
+      </p>
     </footer>
   );
 }

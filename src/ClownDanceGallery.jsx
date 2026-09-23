@@ -202,6 +202,8 @@ export default function ClownDanceGallery() {
         .site-footer { max-width: 1180px; margin: 0 auto; padding: 40px 0 8px; text-align: center; }
         .footer-social { display: flex; justify-content: center; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; }
         .footer-copyright { font-size: 12px; color: #555; }
+        .footer-link { color: #555; text-decoration: underline; }
+        .footer-link:hover { color: var(--accent); }
         .season-two-banner { max-width: 1180px; margin: 28px auto 0; display: flex; align-items: center; gap: 12px; padding: 16px 20px; background: #141414; border: 1px dashed #2a2a2a; border-radius: 8px; }
         .season-two-banner h3 { font-family: 'Fraunces', serif; font-size: 17px; font-weight: 700; margin: 0; color: #f5f5f5; }
         .coming-soon-badge { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: var(--accent); background: rgba(var(--accent-rgb),0.1); border: 1px solid rgba(var(--accent-rgb),0.3); border-radius: 12px; padding: 3px 10px; }
