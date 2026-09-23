@@ -23,6 +23,7 @@ export default function ClownDanceGallery() {
   const [showAuth, setShowAuth] = useState(false);
   const [showAllVideos, setShowAllVideos] = useState(false);
   const [activeTag, setActiveTag] = useState('all');
+  const [season2Open, setSeason2Open] = useState(false);
 
   useEffect(() => {
     document.title = `${SITE.nameMain} ${SITE.nameAccent} ${SITE.nameSuffix}`;
@@ -204,12 +205,11 @@ export default function ClownDanceGallery() {
         .footer-copyright { font-size: 12px; color: #555; }
         .footer-link { color: #555; text-decoration: underline; }
         .footer-link:hover { color: var(--accent); }
-        .season-two-banner { max-width: 1180px; margin: 28px auto 0; padding: 24px 28px; background: #141414; border: 1px dashed #2a2a2a; border-radius: 8px; }
-        .season-two-header { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 12px; }
-        .season-two-banner h3 { font-family: 'Fraunces', serif; font-size: 20px; font-weight: 700; margin: 0; color: #f5f5f5; }
-        .coming-soon-badge { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: var(--accent); background: rgba(var(--accent-rgb),0.1); border: 1px solid rgba(var(--accent-rgb),0.3); border-radius: 12px; padding: 3px 10px; white-space: nowrap; }
-        .season-two-body { color: #c8c8c8; font-size: 14px; line-height: 1.7; margin: 0 0 12px; max-width: 640px; }
-        .season-two-asks { margin: 0 0 16px; padding-left: 20px; color: #c8c8c8; font-size: 14px; line-height: 1.8; max-width: 640px; }
+        .season-two-section { max-width: 1180px; margin: 40px auto 0; }
+        .coming-soon-badge { display: inline-block; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: var(--accent); background: rgba(var(--accent-rgb),0.1); border: 1px solid rgba(var(--accent-rgb),0.3); border-radius: 12px; padding: 3px 10px; white-space: nowrap; margin-left: 10px; vertical-align: middle; }
+        .season-two-answer { text-align: left; }
+        .season-two-body { color: #c8c8c8; font-size: 14px; line-height: 1.7; margin: 0 0 12px; }
+        .season-two-asks { margin: 0 0 16px; padding-left: 20px; color: #c8c8c8; font-size: 14px; line-height: 1.8; }
         .season-two-asks li + li { margin-top: 4px; }
         .season-two-asks strong { color: #f5f5f5; }
         .season-two-cta { display: inline-flex; align-items: center; gap: 6px; background: var(--accent); color: #fff; font-size: 13px; font-weight: 600; padding: 9px 18px; border-radius: 20px; text-decoration: none; transition: background 0.15s; }
@@ -248,8 +248,7 @@ export default function ClownDanceGallery() {
           .site-section { margin-top: 40px; }
           .site-section-title { font-size: 20px; }
           .season-subtitle { display: block; margin-left: 0; margin-top: 4px; font-size: 12px; }
-          .season-two-banner { padding: 18px 16px; }
-          .season-two-banner h3 { font-size: 17px; }
+          .coming-soon-badge { display: block; width: fit-content; margin-left: 0; margin-top: 8px; }
           .section-divider { margin-top: 32px; }
           .videos-section { margin-top: 0; }
         }
@@ -288,7 +287,7 @@ export default function ClownDanceGallery() {
       </header>
 
       <section className="site-section videos-section" id="videos">
-        <h2 className="site-section-title">Season 1 <span className="season-subtitle">(filmed May–July 2026)</span></h2>
+        <h2 className="site-section-title">Season 1: The Boston Tea Party <span className="season-subtitle">(filmed May–July 2026)</span></h2>
 
         {loading && <div className="empty-state"><p>Loading videos…</p></div>}
 
@@ -350,22 +349,34 @@ export default function ClownDanceGallery() {
         </div>
       )}
 
-      <div className="season-two-banner">
-        <div className="season-two-header">
-          <h3>Season 2: East Coast Tour</h3>
+      <div className="season-two-section">
+        <h2 className="site-section-title">
+          Season 2: E Pluribus Unum <span className="season-subtitle">(East Coast tour)</span>
           <span className="coming-soon-badge">Looking for hosts</span>
+        </h2>
+        <div className="faq-list">
+          <div className="faq-item">
+            <button className="faq-question" onClick={()=>setSeason2Open(o=>!o)} type="button">
+              <span>What I need to make a stop happen</span>
+              <span className="faq-caret">{season2Open?'−':'+'}</span>
+            </button>
+            {season2Open && (
+              <div className="faq-answer season-two-answer">
+                <p className="season-two-body">
+                  Season 2 is going on the road — one city per week, up and down the East Coast. To make a stop happen, I need two things from someone local:
+                </p>
+                <ul className="season-two-asks">
+                  <li><strong>An invite + a spot.</strong> Point me to a high-traffic area in your city to perform — a boardwalk, a downtown strip, a busy park, wherever people are.</li>
+                  <li><strong>A couch for the week.</strong> Somewhere to crash for 7 nights while I'm filming there.</li>
+                </ul>
+                <p className="season-two-body">
+                  If that's you, use the contact form below — tell me your city, the spot you have in mind, and that you've got the couch covered. I'll feature your city (and you, if you're up for it) in the videos.
+                </p>
+                <a href="#contact" className="season-two-cta">Pitch your city →</a>
+              </div>
+            )}
+          </div>
         </div>
-        <p className="season-two-body">
-          Season 2 is going on the road — one city per week, up and down the East Coast. To make a stop happen, I need two things from someone local:
-        </p>
-        <ul className="season-two-asks">
-          <li><strong>An invite + a spot.</strong> Point me to a high-traffic area in your city to perform — a boardwalk, a downtown strip, a busy park, wherever people are.</li>
-          <li><strong>A couch for the week.</strong> Somewhere to crash for 7 nights while I'm filming there.</li>
-        </ul>
-        <p className="season-two-body">
-          If that's you, use the contact form below — tell me your city, the spot you have in mind, and that you've got the couch covered. I'll feature your city (and you, if you're up for it) in the videos.
-        </p>
-        <a href="#contact" className="season-two-cta">Pitch your city →</a>
       </div>
 
       {user?.is_admin && (
