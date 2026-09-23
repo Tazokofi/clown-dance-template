@@ -1,6 +1,7 @@
 import { Routes, Route } from "react-router-dom";
 import ClownDanceGallery from "./ClownDanceGallery";
 import PrivacyPolicy from "./components/PrivacyPolicy.jsx";
+import TermsOfUse from "./components/TermsOfUse.jsx";
 
 export default function App() {
   return (
@@ -8,6 +9,7 @@ export default function App() {
       <Route path="/" element={<ClownDanceGallery />} />
       <Route path="/video/:id" element={<ClownDanceGallery />} />
       <Route path="/privacy" element={<PrivacyPolicy />} />
+      <Route path="/terms" element={<TermsOfUse />} />
     </Routes>
   );
 }

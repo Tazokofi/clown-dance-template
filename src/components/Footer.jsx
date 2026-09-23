@@ -16,7 +16,7 @@ export default function Footer() {
         ))}
       </div>
       <p className="footer-copyright">
-        © {year} {SITE.nameMain} {SITE.nameAccent} {SITE.nameSuffix} · <Link to="/privacy" className="footer-link">Privacy Policy</Link>
+        © {year} {SITE.nameMain} {SITE.nameAccent} {SITE.nameSuffix} · <Link to="/privacy" className="footer-link">Privacy Policy</Link> · <Link to="/terms" className="footer-link">Terms of Use</Link>
       </p>
     </footer>
   );
