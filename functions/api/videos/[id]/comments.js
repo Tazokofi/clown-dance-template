@@ -5,7 +5,7 @@ export async function onRequestGet({ params, env, request }) {
   const { results } = await env.DB.prepare(`
     SELECT c.id, c.parent_id, c.author, c.text, c.created_at,
            c.like_count, c.dislike_count, c.report_count,
-           c.is_hidden, c.user_id,
+           c.is_hidden, c.is_pinned, c.user_id,
            u.avatar_url, u.is_admin,
            ${user ? `(SELECT vote FROM comment_votes WHERE comment_id = c.id AND user_id = ${user.id}) as my_vote,
            (SELECT 1 FROM comment_reports WHERE comment_id = c.id AND user_id = ${user.id}) as my_report` : 'NULL as my_vote, NULL as my_report'}
@@ -31,5 +31,5 @@ export async function onRequestPost({ params, env, request }) {
     'INSERT INTO comments (video_id, user_id, parent_id, author, text, created_at) VALUES (?, ?, ?, ?, ?, ?)'
   ).bind(params.id, user.id, parent_id, user.name, text, created_at).run();
   await env.DB.prepare('UPDATE videos SET comment_count = comment_count + 1 WHERE id = ?').bind(params.id).run();
-  return json({ id: meta.last_row_id, parent_id, author: user.name, avatar_url: user.avatar_url, is_admin: user.is_admin, text, created_at, like_count: 0, dislike_count: 0, report_count: 0, is_hidden: 0, my_vote: null, my_report: null, user_id: user.id }, 201);
+  return json({ id: meta.last_row_id, parent_id, author: user.name, avatar_url: user.avatar_url, is_admin: user.is_admin, text, created_at, like_count: 0, dislike_count: 0, report_count: 0, is_hidden: 0, is_pinned: 0, my_vote: null, my_report: null, user_id: user.id }, 201);
 }

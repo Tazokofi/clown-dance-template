@@ -125,6 +125,7 @@ export default function ClownDanceGallery() {
         .hp-field { position: absolute; left: -9999px; width: 1px; height: 1px; opacity: 0; overflow: hidden; }
         .tip-btn-nav { padding: 5px 14px; font-size: 12px; }
         .admin-badge { background: var(--accent); color: #fff; font-size: 10px; font-weight: 700; letter-spacing: 0.05em; padding: 2px 7px; border-radius: 10px; text-transform: uppercase; line-height: 1.4; }
+        .pinned-badge { background: transparent; border: 1px solid var(--accent); color: var(--accent); font-size: 10px; font-weight: 700; letter-spacing: 0.05em; padding: 1px 7px; border-radius: 10px; text-transform: uppercase; line-height: 1.4; }
         .sort-bar { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
         .sort-btn { background: transparent; border: 1px solid #2a2a2a; color: #555; font-size: 11px; padding: 4px 10px; border-radius: 12px; cursor: pointer; font-family: inherit; transition: all 0.15s; white-space: nowrap; }
         .sort-btn:hover { border-color: #555; color: #f5f5f5; }

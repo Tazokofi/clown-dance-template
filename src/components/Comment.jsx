@@ -4,7 +4,7 @@ import Avatar from "./Avatar.jsx";
 import ReportModal from "./ReportModal.jsx";
 
 // ── Single Comment ─────────────────────────────────────
-export default function Comment({ c, user, onReply, onVote, onReport, onDelete, onUnhide, depth=0 }) {
+export default function Comment({ c, user, onReply, onVote, onReport, onDelete, onUnhide, onPin, depth=0 }) {
   const [reporting, setReporting] = useState(false);
 
   async function handleReport(reason) {
@@ -29,6 +29,7 @@ export default function Comment({ c, user, onReply, onVote, onReport, onDelete, 
           <div style={{display:'flex',alignItems:'center',gap:8,flexWrap:'wrap',marginBottom:4}}>
             <span style={{fontWeight:600,fontSize:12,color:'#f5f5f5'}}>{c.author}</span>
             {c.is_admin ? <span className="admin-badge">ADMIN</span> : null}
+            {c.is_pinned ? <span className="pinned-badge">📌 Pinned</span> : null}
             <span style={{fontSize:11,color:'#555'}}>{formatDate(c.created_at)}</span>
           </div>
           <p style={{margin:0,fontSize:13,color:'#d0d0d0',wordBreak:'break-word',lineHeight:1.5}}>{c.text}</p>
@@ -53,6 +54,7 @@ export default function Comment({ c, user, onReply, onVote, onReport, onDelete, 
             {user && !c.my_report && <button className="link-btn" style={{color:'#555'}} onClick={()=>setReporting(true)} type="button">Report</button>}
             {(isOwn || user?.is_admin) && <button className="link-btn" style={{color:'#555'}} onClick={()=>onDelete(c.id)} type="button">Delete</button>}
             {user?.is_admin && <button className="link-btn" style={{color:'#f59e0b'}} onClick={()=>onReport(c.user_id, 'ban')} type="button">Ban user</button>}
+            {user?.is_admin && depth===0 && <button className="link-btn" style={{color:c.is_pinned?'var(--accent)':'#555'}} onClick={()=>onPin(c.id, !c.is_pinned)} type="button">{c.is_pinned ? 'Unpin' : 'Pin'}</button>}
           </div>
           {reporting && <ReportModal onSubmit={handleReport} onCancel={()=>setReporting(false)} />}
         </div>

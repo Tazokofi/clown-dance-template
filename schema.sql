@@ -80,6 +80,9 @@ CREATE TABLE comments (
   report_count  INTEGER NOT NULL DEFAULT 0,
   is_hidden     INTEGER NOT NULL DEFAULT 0,
   is_deleted    INTEGER NOT NULL DEFAULT 0,
+  -- Admin can pin one top-level comment per video so it always shows first,
+  -- above the sort order visitors pick (newest/oldest/top).
+  is_pinned     INTEGER NOT NULL DEFAULT 0,
   created_at    INTEGER NOT NULL
 );
 CREATE INDEX idx_comments_video_id ON comments(video_id);
@@ -114,6 +117,9 @@ CREATE TABLE site_comments (
   report_count  INTEGER NOT NULL DEFAULT 0,
   is_hidden     INTEGER NOT NULL DEFAULT 0,
   is_deleted    INTEGER NOT NULL DEFAULT 0,
+  -- Admin can pin one top-level comment (e.g. an intro/welcome message) so
+  -- it always shows first, above the sort order visitors pick.
+  is_pinned     INTEGER NOT NULL DEFAULT 0,
   created_at    INTEGER NOT NULL
 );
 

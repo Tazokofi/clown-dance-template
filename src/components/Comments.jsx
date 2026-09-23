@@ -82,10 +82,23 @@ export default function Comments({ kind = 'video', videoId, user, onAuthed, onSi
     } catch(e) { alert(e.message); }
   }
 
+  async function handlePin(commentId, pin) {
+    try {
+      await api('/api/admin/pin', { method:'POST', body: JSON.stringify({comment_id:commentId, kind, pinned:pin}) });
+      setComments(prev=>prev.map(c=>{
+        if (c.id === commentId) return { ...c, is_pinned: pin ? 1 : 0 };
+        // Pinning a new comment unpins whichever one was pinned before it.
+        if (pin && !c.parent_id) return { ...c, is_pinned: 0 };
+        return c;
+      }));
+    } catch(e) { alert(e.message); }
+  }
+
   const topLevel = (comments||[]).filter(c=>!c.parent_id);
   const replies  = (comments||[]).filter(c=> c.parent_id);
 
   const sortedTopLevel = [...topLevel].sort((a,b) => {
+    if (a.is_pinned !== b.is_pinned) return b.is_pinned - a.is_pinned; // pinned comment always floats to the top
     if (sort === 'oldest') return a.created_at - b.created_at;
     if (sort === 'top')    return (b.like_count - b.dislike_count) - (a.like_count - a.dislike_count);
     return b.created_at - a.created_at; // newest
@@ -117,10 +130,10 @@ export default function Comments({ kind = 'video', videoId, user, onAuthed, onSi
         {sortedTopLevel.map(c=>(
           <div key={c.id}>
             <Comment c={c} user={user} onReply={c=>{setReplyTo(c);setTimeout(()=>textareaRef.current?.focus(),50);}}
-              onVote={handleVote} onReport={handleReport} onDelete={handleDelete} onUnhide={handleUnhide} depth={0} />
+              onVote={handleVote} onReport={handleReport} onDelete={handleDelete} onUnhide={handleUnhide} onPin={handlePin} depth={0} />
             {replies.filter(r=>r.parent_id===c.id).map(r=>(
               <Comment key={r.id} c={r} user={user} onReply={()=>{}} onVote={handleVote}
-                onReport={handleReport} onDelete={handleDelete} onUnhide={handleUnhide} depth={1} />
+                onReport={handleReport} onDelete={handleDelete} onUnhide={handleUnhide} onPin={handlePin} depth={1} />
             ))}
           </div>
         ))}
