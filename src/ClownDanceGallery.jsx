@@ -168,6 +168,7 @@ export default function ClownDanceGallery() {
 
         .site-section { max-width: 1180px; margin: 64px auto 0; }
         .site-section-title { font-family: 'Fraunces', serif; font-size: 26px; font-weight: 700; margin-bottom: 20px; }
+        .season-subtitle { font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 400; color: #8a8a8a; margin-left: 8px; vertical-align: middle; }
         .faq-list { display: flex; flex-direction: column; gap: 8px; }
         .faq-item { background: #141414; border: 1px solid #1e1e1e; border-radius: 6px; overflow: hidden; }
         .faq-question { width: 100%; display: flex; justify-content: space-between; align-items: center; gap: 12px; background: none; border: none; color: #f5f5f5; font-family: inherit; font-size: 14px; font-weight: 600; padding: 14px 16px; cursor: pointer; text-align: left; }
@@ -228,6 +229,7 @@ export default function ClownDanceGallery() {
           .add-video-panel { margin: 20px 0 0; padding: 16px; }
           .site-section { margin-top: 40px; }
           .site-section-title { font-size: 20px; }
+          .season-subtitle { display: block; margin-left: 0; margin-top: 4px; font-size: 12px; }
           .section-divider { margin-top: 32px; }
           .videos-section { margin-top: 0; }
         }
@@ -266,7 +268,7 @@ export default function ClownDanceGallery() {
       </header>
 
       <section className="site-section videos-section" id="videos">
-        <h2 className="site-section-title">Season 1</h2>
+        <h2 className="site-section-title">Season 1 <span className="season-subtitle">(filmed May–July 2026)</span></h2>
 
         {loading && <div className="empty-state"><p>Loading videos…</p></div>}
 
