@@ -9,6 +9,7 @@ import AddVideoPanel from "./components/AddVideoPanel.jsx";
 import FAQSection from "./components/FAQSection.jsx";
 import TipJarIcon from "./components/TipJarIcon.jsx";
 import ContactSection from "./components/ContactSection.jsx";
+import Footer from "./components/Footer.jsx";
 import Comments from "./components/Comments.jsx";
 import VideoModal from "./components/VideoModal.jsx";
 
@@ -198,6 +199,9 @@ export default function ClownDanceGallery() {
         .social-badge svg { display: block; }
         .social-badge-text { font-family: 'Fraunces', serif; font-size: 17px; font-weight: 900; font-style: italic; line-height: 1; }
         .videos-section { margin-top: 8px; }
+        .site-footer { max-width: 1180px; margin: 0 auto; padding: 40px 0 8px; text-align: center; }
+        .footer-social { display: flex; justify-content: center; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; }
+        .footer-copyright { font-size: 12px; color: #555; }
         .season-two-banner { max-width: 1180px; margin: 28px auto 0; display: flex; align-items: center; gap: 12px; padding: 16px 20px; background: #141414; border: 1px dashed #2a2a2a; border-radius: 8px; }
         .season-two-banner h3 { font-family: 'Fraunces', serif; font-size: 17px; font-weight: 700; margin: 0; color: #f5f5f5; }
         .coming-soon-badge { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: var(--accent); background: rgba(var(--accent-rgb),0.1); border: 1px solid rgba(var(--accent-rgb),0.3); border-radius: 12px; padding: 3px 10px; }
@@ -361,6 +365,10 @@ export default function ClownDanceGallery() {
       <div className="section-divider" />
 
       <ContactSection />
+
+      <div className="section-divider" />
+
+      <Footer />
 
       {showAuth && !user && (
         <div className="overlay" onMouseDown={e=>{if(e.target===e.currentTarget)setShowAuth(false);}}>

@@ -1,7 +1,6 @@
 import { useState } from "react";
-import { SOCIAL_LINKS, CHAT_CONTACTS } from "../config.js";
+import { CHAT_CONTACTS } from "../config.js";
 import { api } from "../utils.js";
-import SocialIcon from "./SocialIcon.jsx";
 
 // ── Contact Section ─────────────────────────────────────
 export default function ContactSection() {
@@ -51,31 +50,10 @@ export default function ContactSection() {
 
         <div className="faq-item">
           <button className="faq-question" onClick={()=>toggle(1)} type="button">
-            <span>Social Media</span>
+            <span>Chat with me</span>
             <span className="faq-caret">{openIndex===1?'−':'+'}</span>
           </button>
           {openIndex===1 && (
-            <div className="faq-answer">
-              <div className="social-links">
-                {SOCIAL_LINKS.map(s => (
-                  <a key={s.label} href={s.href} target="_blank" rel="noopener noreferrer" className="social-row">
-                    <span className="social-badge" aria-hidden="true">
-                      <SocialIcon platform={s.platform} />
-                    </span>
-                    <span className="social-label">{s.label}</span>
-                  </a>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
-
-        <div className="faq-item">
-          <button className="faq-question" onClick={()=>toggle(2)} type="button">
-            <span>Chat with me</span>
-            <span className="faq-caret">{openIndex===2?'−':'+'}</span>
-          </button>
-          {openIndex===2 && (
             <div className="faq-answer">
               <div className="chat-links">
                 {CHAT_CONTACTS.map(c => (
