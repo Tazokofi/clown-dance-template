@@ -361,7 +361,7 @@ export default function ClownDanceGallery() {
         <div className="faq-list">
           <div className="faq-item season-two-item">
             <button className="faq-question" onClick={()=>setSeason2Open(o=>!o)} type="button">
-              <span>What I need to make a stop happen</span>
+              <span>Help required to make a season 2</span>
               <span className="faq-caret">{season2Open?'−':'+'}</span>
             </button>
             {season2Open && (
