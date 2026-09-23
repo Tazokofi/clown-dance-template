@@ -6,7 +6,7 @@ import Comments from "./Comments.jsx";
 import EditVideoForm from "./EditVideoForm.jsx";
 
 // ── Video Modal ────────────────────────────────────────
-export default function VideoModal({ video: initialVideo, videos, onNavigate, onVideoUpdated, onClose, user, onAuthed, onSignOut, onUpdateUser }) {
+export default function VideoModal({ video: initialVideo, videos, onNavigate, onVideoUpdated, onVideoDeleted, onClose, user, onAuthed, onSignOut, onUpdateUser }) {
   const overlayRef             = useRef(null);
   const viewSentForId          = useRef(null);
   const [video, setVideo]      = useState(initialVideo);
@@ -25,6 +25,10 @@ export default function VideoModal({ video: initialVideo, videos, onNavigate, on
     setVideo(prev => ({ ...prev, ...updated }));
     if (onVideoUpdated) onVideoUpdated({ ...video, ...updated });
     setEditing(false);
+  }
+  function handleVideoDeleted(id) {
+    if (onVideoDeleted) onVideoDeleted(id);
+    onClose();
   }
 
   async function handleVideoVote(vote) {
@@ -98,7 +102,7 @@ export default function VideoModal({ video: initialVideo, videos, onNavigate, on
             </div>
             {user?.is_admin && (
               editing
-                ? <EditVideoForm video={video} onSaved={handleVideoSaved} onCancel={()=>setEditing(false)} />
+                ? <EditVideoForm video={video} onSaved={handleVideoSaved} onCancel={()=>setEditing(false)} onDeleted={handleVideoDeleted} />
                 : <button className="link-btn" onClick={()=>setEditing(true)} type="button" style={{marginTop:6}}>✎ Edit video</button>
             )}
           </div>

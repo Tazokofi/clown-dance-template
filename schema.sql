@@ -44,6 +44,11 @@ CREATE TABLE videos (
   -- Beach" or "Convos / Monologues" -- lets visitors browse by act
   -- style/location instead of just the title.
   tag            TEXT NOT NULL DEFAULT '',
+  -- Soft delete -- an admin removing a video just flips this rather than
+  -- wiping the row, so nothing (its comments/votes/view history) is lost
+  -- if it was clicked by accident. Deleted videos are excluded from the
+  -- public /api/videos list.
+  is_deleted     INTEGER NOT NULL DEFAULT 0,
   created_at     INTEGER NOT NULL
 );
 

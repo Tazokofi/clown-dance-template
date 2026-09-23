@@ -52,6 +52,10 @@ export default function ClownDanceGallery() {
     setVideos(prev => prev.map(v => v.id === updated.id ? { ...v, ...updated } : v));
   }
 
+  function handleVideoDeleted(id) {
+    setVideos(prev => prev.filter(v => v.id !== id));
+  }
+
   // Distinct tags currently in use, alphabetical, for the filter bar.
   const tags = [...new Set(videos.map(v => v.tag).filter(Boolean))].sort((a, b) => a.localeCompare(b));
   const tagFilteredVideos = activeTag === 'all' ? videos : videos.filter(v => v.tag === activeTag);
@@ -374,6 +378,7 @@ export default function ClownDanceGallery() {
           videos={videos}
           onNavigate={openVideo}
           onVideoUpdated={handleVideoUpdated}
+          onVideoDeleted={handleVideoDeleted}
           onClose={closeVideo}
           user={user}
           onAuthed={setUser}

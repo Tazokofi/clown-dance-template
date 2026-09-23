@@ -6,7 +6,7 @@ export async function onRequestGet({ env, request }) {
     `SELECT v.id, v.title, v.description, v.bunny_video_id, v.thumbnail_url, v.duration_seconds,
             v.view_count, v.like_count, v.dislike_count, v.comment_count, v.tag, v.created_at
             ${user ? `, (SELECT vote FROM video_votes WHERE video_id = v.id AND user_id = ${user.id}) as my_vote` : ', NULL as my_vote'}
-     FROM videos v ORDER BY v.created_at DESC`
+     FROM videos v WHERE v.is_deleted = 0 ORDER BY v.created_at DESC`
   ).all();
   // Only cache the anonymous shape of this response at Cloudflare's edge --
   // when `user` is set, `my_vote` is personal to them, and the edge cache
